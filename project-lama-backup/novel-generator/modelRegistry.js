@@ -21,8 +21,12 @@ const WORDS_PER_TOKEN = 0.6;
  *                   sintesis level tinggi walau lebih lambat
  */
 const MODELS = {
+  // PERINGATAN: "openrouter/auto" adalah router BERBAYAR. Ia memilih model
+  // terbaik yang tersedia (Gemini Flash, GPT, dsb.) dan menagih tarif model
+  // itu. Jangan pernah menjadikannya nilai bawaan atau tujuan fallback —
+  // lihat FREE_FALLBACK_CHAIN dan assertModelAllowed() di bawah.
   'openrouter/auto': {
-    label: 'Otomatis Pilih AI Terbaik',
+    label: 'Otomatis Pilih AI Terbaik (BERBAYAR)',
     context_tokens: 128000,
     free: false,
     reasoning: false
@@ -91,6 +95,56 @@ const MODELS = {
 
 const DEFAULT_MODEL = 'google/gemini-2.0-flash-exp:free';
 
+/*
+ * Rantai cadangan GRATIS.
+ *
+ * Model gratis OpenRouter sering menolak permintaan sesaat (antrean penuh /
+ * batas laju harian). Ketika itu terjadi, aplikasi harus pindah ke model
+ * GRATIS berikutnya — BUKAN ke "openrouter/auto" yang berbayar. Urutan disusun
+ * dari context window terbesar ke terkecil supaya potongan teks yang sudah
+ * disiapkan tetap muat sejauh mungkin.
+ */
+const FREE_FALLBACK_CHAIN = [
+  'google/gemini-2.0-flash-exp:free',
+  'meta-llama/llama-4-scout:free',
+  'mistralai/mistral-small-3.1-24b-instruct:free',
+  'deepseek/deepseek-chat-v3-0324:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'qwen/qwen-2.5-72b-instruct:free'
+];
+
+/**
+ * Model berbayar hanya boleh dipakai bila pengguna secara sadar mengizinkannya
+ * lewat ALLOW_PAID_MODELS=true di .env. Bawaannya MATI, sehingga tidak ada
+ * jalur kode yang bisa diam-diam menimbulkan tagihan.
+ */
+function paidModelsAllowed() {
+  return String(process.env.ALLOW_PAID_MODELS || '').toLowerCase() === 'true';
+}
+
+/**
+ * Pagar terakhir sebelum permintaan dikirim ke OpenRouter. Melempar error yang
+ * jelas alih-alih menagih diam-diam.
+ */
+function assertModelAllowed(modelName) {
+  if (isFreeModel(modelName) || paidModelsAllowed()) return;
+  throw new Error(
+    `[MODEL BERBAYAR DIBLOKIR] Permintaan ke "${modelName}" dibatalkan karena ` +
+    `model ini menagih biaya. Pilih model bertanda "(Gratis)", atau setel ` +
+    `ALLOW_PAID_MODELS=true di .env bila memang ingin memakai model berbayar.`
+  );
+}
+
+/**
+ * Model gratis berikutnya sesudah `modelName` gagal. Mengembalikan null bila
+ * seluruh rantai sudah dicoba — pemanggil harus menyerah dengan error, bukan
+ * beralih ke model berbayar.
+ */
+function nextFreeModel(modelName, sudahDicoba = []) {
+  const terpakai = new Set([...sudahDicoba, modelName]);
+  return FREE_FALLBACK_CHAIN.find(m => !terpakai.has(m)) || null;
+}
+
 // Batas laju free tier OpenRouter: 20 permintaan per menit.
 // Dipakai throttle agar analisis hierarkis tidak ditolak server.
 const FREE_TIER_RPM = 20;
@@ -158,6 +212,10 @@ function createRateLimiter(rpm = FREE_TIER_RPM) {
 module.exports = {
   MODELS,
   DEFAULT_MODEL,
+  FREE_FALLBACK_CHAIN,
+  paidModelsAllowed,
+  assertModelAllowed,
+  nextFreeModel,
   FREE_TIER_RPM,
   WORDS_PER_TOKEN,
   getModelInfo,

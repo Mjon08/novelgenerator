@@ -58,10 +58,11 @@ function resolveModelName(reqModel) {
     // "openrouter/auto" oleh aturan generik di bawah.
     if (reqModel.endsWith(':free')) return reqModel;
 
-    // Alias internal aplikasi (mis. "claude-opus-4-8") tidak dikenal OpenRouter,
-    // jadi dialihkan ke router otomatis.
-    if (reqModel.includes('default') || reqModel === 'claude-opus-4-8' || /^claude[-_]/i.test(reqModel)) {
-      return 'openrouter/auto';
+    // Alias internal aplikasi (mis. "claude-opus-4-8") tidak dikenal OpenRouter.
+    // Dialihkan ke model GRATIS bawaan — bukan "openrouter/auto", karena router
+    // itu berbayar dan pernah menimbulkan tagihan tak terduga.
+    if (reqModel.includes('default') || /^claude[-_]/i.test(reqModel)) {
+      return DEFAULT_MODEL;
     }
     return reqModel;
   }

@@ -3,12 +3,37 @@ const path = require('path');
 const os = require('os');
 const https = require('https');
 const Anthropic = require('@anthropic-ai/sdk');
+const {
+  DEFAULT_MODEL,
+  isFreeModel,
+  assertModelAllowed,
+  nextFreeModel
+} = require('./modelRegistry');
+
+/**
+ * Menerjemahkan nama model apa pun menjadi id yang dikenal OpenRouter.
+ * Model yang sudah valid diteruskan apa adanya; alias internal dan nilai
+ * kosong jatuh ke model gratis bawaan — TIDAK PERNAH ke router berbayar.
+ */
+function normalisasiModel(model) {
+  if (!model) return DEFAULT_MODEL;
+  if (model.endsWith(':free')) return model;
+  // Id Anthropic langsung (claude-*) tidak ada di katalog OpenRouter.
+  if (/^claude[-_]/i.test(model)) return DEFAULT_MODEL;
+  return model;
+}
 
 function createOpenRouterClient(apiKey) {
   return {
     messages: {
       create: async (params) => {
-        let initialModel = params.model === 'claude-opus-4-8' || !params.model || params.model.includes('free') ? 'openrouter/auto' : params.model;
+        // Alias internal (mis. "claude-sonnet-4-6") tidak dikenal OpenRouter.
+        // Dulu semuanya — TERMASUK model ":free" — dibelokkan ke
+        // "openrouter/auto" yang BERBAYAR, sehingga pilihan "gratis" pengguna
+        // diam-diam menjadi panggilan berbayar. Sekarang alias tak dikenal
+        // jatuh ke DEFAULT_MODEL yang gratis.
+        const initialModel = normalisasiModel(params.model);
+        assertModelAllowed(initialModel);
         const messages = [];
 
         if (params.system) {
@@ -21,7 +46,7 @@ function createOpenRouterClient(apiKey) {
           });
         }
 
-        async function executeCall(targetModel) {
+        async function executeCall(targetModel, sudahDicoba = []) {
           const body = JSON.stringify({
             model: targetModel,
             messages: messages,
@@ -48,11 +73,12 @@ function createOpenRouterClient(apiKey) {
                   try {
                     const parsedErr = JSON.parse(errBody);
                     const msg = (parsedErr.error && parsedErr.error.message) || errBody;
-                    if (targetModel !== 'openrouter/auto') {
-                      console.warn(`[OpenRouter Stream Fallback] Model ${targetModel} failed (${msg}). Retrying with openrouter/auto...`);
-                      return resolve(await executeCall('openrouter/auto'));
+                    const berikutnya = nextFreeModel(targetModel, sudahDicoba);
+                    if (berikutnya) {
+                      console.warn(`[OpenRouter] Model ${targetModel} gagal (${msg}). Beralih ke model GRATIS berikutnya: ${berikutnya}`);
+                      return resolve(await executeCall(berikutnya, [...sudahDicoba, targetModel]));
                     }
-                    return reject(new Error(msg));
+                    return reject(new Error(`Semua model gratis sedang tidak tersedia. Kegagalan terakhir pada ${targetModel}: ${msg}`));
                   } catch (e) {
                     return reject(new Error(`OpenRouter HTTP ${res.statusCode}: ${errBody}`));
                   }
@@ -108,11 +134,13 @@ function createOpenRouterClient(apiKey) {
                 try {
                   const parsed = JSON.parse(data);
                   if (parsed.error) {
-                    if (targetModel !== 'openrouter/auto') {
-                      console.warn(`[OpenRouter Fallback] Model ${targetModel} failed (${parsed.error.message || 'error'}). Retrying with openrouter/auto...`);
-                      return resolve(await executeCall('openrouter/auto'));
+                    const msg = parsed.error.message || JSON.stringify(parsed.error);
+                    const berikutnya = nextFreeModel(targetModel, sudahDicoba);
+                    if (berikutnya) {
+                      console.warn(`[OpenRouter] Model ${targetModel} gagal (${msg}). Beralih ke model GRATIS berikutnya: ${berikutnya}`);
+                      return resolve(await executeCall(berikutnya, [...sudahDicoba, targetModel]));
                     }
-                    return reject(new Error(parsed.error.message || JSON.stringify(parsed.error)));
+                    return reject(new Error(`Semua model gratis sedang tidak tersedia. Kegagalan terakhir pada ${targetModel}: ${msg}`));
                   }
                   const textContent = parsed.choices && parsed.choices[0] && parsed.choices[0].message ? parsed.choices[0].message.content : '';
                   resolve({

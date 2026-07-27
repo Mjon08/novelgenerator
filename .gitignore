@@ -1,0 +1,11 @@
+node_modules
+.env
+.env.local
+.DS_Store
+project-lama-backup/novel-generator/database/*.db
+project-lama-backup/novel-generator/database/*.db-shm
+project-lama-backup/novel-generator/database/*.db-wal
+project-lama-backup/novel-generator/uploads/
+# Berkas ekspor sementara (Wattpad/KBM/dst) — dibuat ulang tiap ekspor,
+# bukan data yang perlu disimpan di repo.
+project-lama-backup/novel-generator/novels/

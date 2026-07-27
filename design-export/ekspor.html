@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ekspor — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  .platform-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+  .platform-btn { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); padding: 20px 16px; text-align: center; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-soft); }
+  .platform-btn:hover { border-color: var(--color-primary); transform: translateY(-2px); box-shadow: var(--shadow-md); background: var(--color-primary-fixed); }
+  .platform-btn-icon { margin-bottom: 8px; display: flex; justify-content: center; }
+  .platform-btn-icon .material-symbols-outlined { font-size: 32px; color: var(--color-primary); }
+  .platform-btn-label { font-size: 0.85rem; font-weight: 600; color: var(--color-on-surface); }
+  .platform-btn-sub { font-size: 0.72rem; color: var(--color-on-surface-variant); margin-top: 3px; font-family: var(--font-mono); }
+  .preview-box { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius); padding: 16px; font-family: var(--font-serif); font-size: 0.9rem; line-height: 1.8; max-height: 200px; overflow-y: auto; color: var(--color-on-surface-variant); }
+  .copy-row { display: flex; gap: 8px; align-items: flex-start; }
+  .copy-row textarea { flex: 1; }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+    <div class="page-header">
+      <div class="breadcrumb"><a href="index.html">Dashboard</a><span class="breadcrumb-sep">›</span><span>Ekspor</span></div>
+      <h1 class="page-title">
+        <span class="material-symbols-outlined">upload_file</span>
+        Ekspor Novel
+      </h1>
+    </div>
+
+    <div class="page-content" id="main-content">
+      <!-- Picker jika tidak ada param -->
+      <div id="picker-section">
+        <div class="card mb-20">
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Pilih Novel untuk Diekspor</label>
+              <select class="form-select" id="novel-picker" onchange="selectNovel(this.value)">
+                <option value="">— Pilih novel —</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Atau Pilih Seri</label>
+              <select class="form-select" id="seri-picker" onchange="selectSeri(this.value)">
+                <option value="">— Pilih seri —</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Novel export view -->
+      <div id="novel-export-view" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <button class="btn btn-ghost btn-sm" onclick="resetPicker()">
+            <span class="material-symbols-outlined">arrow_back</span> Kembali
+          </button>
+          <span id="export-novel-title" style="font-weight:600; font-family:var(--font-serif); color:var(--color-on-surface);"></span>
+        </div>
+
+        <div class="card mb-20">
+          <div class="card-header"><h2 class="card-title">Format Ekspor</h2></div>
+          <div class="card-body">
+            <div class="platform-grid">
+              <div class="platform-btn" onclick="doExport('wattpad')">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">menu_book</span></div>
+                <div class="platform-btn-label">Wattpad</div>
+                <div class="platform-btn-sub">.txt</div>
+              </div>
+              <div class="platform-btn" onclick="doExport('kbm')">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">phone_android</span></div>
+                <div class="platform-btn-label">KBM App</div>
+                <div class="platform-btn-sub">.txt</div>
+              </div>
+              <div class="platform-btn" onclick="doExport('google-docs')">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">description</span></div>
+                <div class="platform-btn-label">Google Docs</div>
+                <div class="platform-btn-sub">.docx</div>
+              </div>
+              <div class="platform-btn" onclick="doExport('pdf')">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">picture_as_pdf</span></div>
+                <div class="platform-btn-label">PDF</div>
+                <div class="platform-btn-sub">.html → PDF</div>
+              </div>
+              <div class="platform-btn" onclick="doExport('semua')">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">folder_zip</span></div>
+                <div class="platform-btn-label">Semua Format</div>
+                <div class="platform-btn-sub">ZIP</div>
+              </div>
+              <div class="platform-btn" onclick="doExportEditor()">
+                <div class="platform-btn-icon"><span class="material-symbols-outlined">edit_document</span></div>
+                <div class="platform-btn-label">Ekspor Editor</div>
+                <div class="platform-btn-sub">.txt / HTML</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sinopsis Marketing -->
+        <div class="card mb-20">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="material-symbols-outlined">chat_bubble</span>
+              Sinopsis Marketing
+            </h2>
+            <button class="btn btn-ghost btn-sm" onclick="refreshSinopsis()">
+              <span class="material-symbols-outlined">refresh</span> Regenerasi
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="sinopsis-loading" class="skeleton skeleton-text w-80" style="height:80px; display:none;"></div>
+            <div class="copy-row">
+              <textarea class="form-textarea" id="sinopsis-text" style="min-height:100px;" placeholder="Memuat sinopsis marketing…"></textarea>
+              <button class="btn btn-secondary btn-sm" onclick="copyText('sinopsis-text')" title="Salin">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="card mb-20">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="material-symbols-outlined">label</span>
+              Tag Platform
+            </h2>
+            <button class="btn btn-ghost btn-sm" onclick="refreshTags()">
+              <span class="material-symbols-outlined">refresh</span> Regenerasi
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="copy-row">
+              <textarea class="form-textarea" id="tags-text" style="min-height:60px;" placeholder="Memuat tag…"></textarea>
+              <button class="btn btn-secondary btn-sm" onclick="copyText('tags-text')" title="Salin">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">
+              <span class="material-symbols-outlined">visibility</span>
+              Preview Konten
+            </h2>
+          </div>
+          <div class="card-body">
+            <div class="preview-box" id="preview-box">Memuat preview…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seri export view -->
+      <div id="seri-export-view" style="display:none;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <button class="btn btn-ghost btn-sm" onclick="resetPicker()">
+            <span class="material-symbols-outlined">arrow_back</span> Kembali
+          </button>
+          <span id="export-seri-title" style="font-weight:600; font-family:var(--font-serif); color:var(--color-on-surface);"></span>
+        </div>
+        <div class="card mb-20">
+          <div class="card-header"><h2 class="card-title">Pilih Jilid yang Akan Diekspor</h2></div>
+          <div class="card-body" id="jilid-checklist"></div>
+        </div>
+        <div class="toggle-row mb-16">
+          <div style="flex:1; font-size:0.88rem;">Sertakan Story Bible</div>
+          <label class="toggle">
+            <input type="checkbox" id="include-sb" />
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="eksporSeri()">
+          <span class="material-symbols-outlined">folder_zip</span>
+          Ekspor Seri sebagai ZIP
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('ekspor');
+
+  const params = new URLSearchParams(location.search);
+  const novelId = params.get('novel_id');
+  const seriId = params.get('seri_id');
+  const dokId = params.get('dok_id');
+
+  let currentNovelId = null;
+  let currentDokId = null;
+  let currentSeriId = null;
+
+  // Load pickers
+  async function loadPickers() {
+    try {
+      const [novRes, seriRes] = await Promise.all([
+        fetch('/api/editor/dokumen/daftar').then(r => r.json()),
+        fetch('/api/seri/daftar').then(r => r.json())
+      ]);
+      const novSel = document.getElementById('novel-picker');
+      (novRes || []).forEach(n => {
+        const opt = new Option(n.judul || 'Tanpa Judul', n.novel_id || n.id);
+        opt.dataset.dok = n.id;
+        novSel.appendChild(opt);
+      });
+      const seriSel = document.getElementById('seri-picker');
+      (seriRes || []).forEach(s => {
+        seriSel.appendChild(new Option(s.judul, s.id));
+      });
+    } catch(err) {}
+  }
+
+  function selectNovel(val) {
+    if (!val) return;
+    const sel = document.getElementById('novel-picker');
+    const opt = sel.querySelector(`option[value="${val}"]`);
+    currentNovelId = val;
+    currentDokId = opt ? opt.dataset.dok : null;
+    showNovelExport(val, sel.options[sel.selectedIndex].text);
+  }
+
+  function selectSeri(val) {
+    if (!val) return;
+    const sel = document.getElementById('seri-picker');
+    currentSeriId = val;
+    showSeriExport(val, sel.options[sel.selectedIndex].text);
+  }
+
+  function resetPicker() {
+    currentNovelId = null;
+    currentDokId = null;
+    currentSeriId = null;
+    document.getElementById('novel-export-view').style.display = 'none';
+    document.getElementById('seri-export-view').style.display = 'none';
+    document.getElementById('picker-section').style.display = '';
+  }
+
+  // Show novel export
+  async function showNovelExport(nId, title) {
+    document.getElementById('picker-section').style.display = 'none';
+    document.getElementById('seri-export-view').style.display = 'none';
+    document.getElementById('novel-export-view').style.display = '';
+    document.getElementById('export-novel-title').textContent = title || 'Novel';
+
+    loadSinopsis(nId);
+    loadTags(nId);
+    loadPreview(nId);
+  }
+
+  async function loadSinopsis(nId) {
+    try {
+      const res = await fetch('/api/export/sinopsis/' + nId);
+      const data = await res.json();
+      document.getElementById('sinopsis-text').value = data.sinopsis || data.content || '';
+    } catch(err) {
+      document.getElementById('sinopsis-text').value = '(Gagal memuat sinopsis)';
+    }
+  }
+
+  async function loadTags(nId) {
+    try {
+      const res = await fetch('/api/export/tags/' + nId);
+      const data = await res.json();
+      document.getElementById('tags-text').value = (data.tags || []).join(', ') || data.content || '';
+    } catch(err) {
+      document.getElementById('tags-text').value = '';
+    }
+  }
+
+  async function loadPreview(nId) {
+    try {
+      // Try to get novel content from editor
+      if (currentDokId) {
+        const res = await fetch('/api/editor/dokumen/' + currentDokId);
+        const data = await res.json();
+        const preview = (data.konten_teks || '').substring(0, 500);
+        document.getElementById('preview-box').textContent = preview || '(Konten tidak tersedia)';
+      }
+    } catch(err) {
+      document.getElementById('preview-box').textContent = '(Gagal memuat preview)';
+    }
+  }
+
+  async function refreshSinopsis() {
+    const nId = currentNovelId;
+    if (!nId) return;
+    document.getElementById('sinopsis-text').value = 'Memuat…';
+    await loadSinopsis(nId);
+    toast.success('Sinopsis diperbarui');
+  }
+
+  async function refreshTags() {
+    const nId = currentNovelId;
+    if (!nId) return;
+    document.getElementById('tags-text').value = 'Memuat…';
+    await loadTags(nId);
+    toast.success('Tag diperbarui');
+  }
+
+  function copyText(id) {
+    const el = document.getElementById(id);
+    navigator.clipboard.writeText(el.value).then(() => toast.success('Disalin ke clipboard')).catch(() => toast.error('Gagal menyalin'));
+  }
+
+  async function doExport(format) {
+    const nId = currentNovelId;
+    if (!nId) return toast.error('Pilih novel terlebih dahulu');
+
+    try {
+      let url;
+      if (format === 'pdf' && currentDokId) {
+        url = '/api/editor/ekspor/txt/' + currentDokId;
+      } else if (format === 'google-docs' && currentDokId) {
+        url = '/api/editor/ekspor/pdf/' + currentDokId;
+      } else {
+        const formatMap = { wattpad: 'wattpad', kbm: 'kbm', semua: 'semua' };
+        const res = await fetch('/api/export/' + nId, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ format: formatMap[format] || format })
+        });
+        if (res.ok) {
+          const blob = await res.blob();
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          const cd = res.headers.get('Content-Disposition') || '';
+          a.download = cd.match(/filename="?([^"]+)"?/)?.[1] || 'novel-ekspor.txt';
+          a.click();
+          toast.success('File berhasil diunduh');
+          return;
+        }
+        throw new Error('Format tidak didukung');
+      }
+
+      // For editor-based exports
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      if (res.ok) {
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        const cd = res.headers.get('Content-Disposition') || '';
+        a.download = cd.match(/filename="?([^"]+)"?/)?.[1] || 'novel.txt';
+        a.click();
+        toast.success('File berhasil diunduh');
+      } else {
+        toast.error('Gagal mengunduh file');
+      }
+    } catch(err) {
+      toast.error('Gagal ekspor: ' + err.message);
+    }
+  }
+
+  async function doExportEditor() {
+    if (!currentDokId) return toast.error('Dokumen editor tidak ditemukan');
+    try {
+      const res = await fetch('/api/editor/ekspor/txt/' + currentDokId, { method: 'POST' });
+      if (res.ok) {
+        const blob = await res.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'novel.txt';
+        a.click();
+        toast.success('File TXT berhasil diunduh');
+      }
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  // Show seri export
+  async function showSeriExport(sId, title) {
+    document.getElementById('picker-section').style.display = 'none';
+    document.getElementById('novel-export-view').style.display = 'none';
+    document.getElementById('seri-export-view').style.display = '';
+    document.getElementById('export-seri-title').textContent = title;
+
+    try {
+      const res = await fetch('/api/seri/' + sId);
+      const data = await res.json();
+      const checklist = document.getElementById('jilid-checklist');
+      const jilid = data.jilid || [];
+      if (jilid.length === 0) {
+        checklist.innerHTML = '<p style="color:var(--color-on-surface-variant);">Belum ada jilid dalam seri ini.</p>';
+        return;
+      }
+      checklist.innerHTML = jilid.map(j => `
+        <label style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--color-outline-variant); cursor:pointer;">
+          <input type="checkbox" value="${j.novel_id || j.id}" checked />
+          <span>Jilid ${j.nomor}: ${j.judul}</span>
+          <span class="badge badge-${j.status==='selesai'?'success':j.status==='sedang_ditulis'?'info':'muted'}">${j.status}</span>
+        </label>
+      `).join('');
+    } catch(err) {
+      toast.error('Gagal memuat data seri');
+    }
+  }
+
+  function eksporSeri() {
+    const checks = document.querySelectorAll('#jilid-checklist input[type=checkbox]:checked');
+    const jilidIds = Array.from(checks).map(c => c.value);
+    if (jilidIds.length === 0) return toast.error('Pilih minimal satu jilid');
+    toast.info('Fitur ekspor seri ZIP sedang dalam pengembangan. Ekspor jilid satu per satu dari halaman novel masing-masing.');
+  }
+
+  // Init
+  loadPickers().then(() => {
+    if (novelId) {
+      currentNovelId = novelId;
+      const sel = document.getElementById('novel-picker');
+      sel.value = novelId;
+      const opt = sel.querySelector(`option[value="${novelId}"]`);
+      showNovelExport(novelId, opt ? opt.textContent : 'Novel');
+    } else if (dokId) {
+      currentDokId = dokId;
+      // Find novel_id for this dok
+      fetch('/api/editor/dokumen/' + dokId).then(r => r.json()).then(data => {
+        currentNovelId = data.novel_id || dokId;
+        showNovelExport(currentNovelId, data.judul || 'Novel');
+      }).catch(() => {});
+    } else if (seriId) {
+      currentSeriId = seriId;
+      const sel = document.getElementById('seri-picker');
+      sel.value = seriId;
+      const opt = sel.querySelector(`option[value="${seriId}"]`);
+      showSeriExport(seriId, opt ? opt.textContent : 'Seri');
+    }
+  });
+</script>
+</body>
+</html>

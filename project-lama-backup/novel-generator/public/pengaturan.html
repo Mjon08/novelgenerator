@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pengaturan - novelGENerator Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#1a1c1d",
+                    "on-primary": "#ffffff",
+                    "on-background": "#1a1c1d",
+                    "surface-tint": "#005bc1",
+                    "surface-container-high": "#e8e8e9",
+                    "tertiary": "#9e3d00",
+                    "outline-variant": "#c1c6d7",
+                    "on-primary-fixed": "#001a41",
+                    "on-surface-variant": "#414755",
+                    "primary-container": "#0070eb",
+                    "secondary-fixed-dim": "#c2c1ff",
+                    "surface-variant": "#e2e2e3",
+                    "surface-dim": "#dadadb",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#0c006b",
+                    "inverse-on-surface": "#f0f1f2",
+                    "error": "#ba1a1a",
+                    "primary": "#0058bc",
+                    "on-secondary-container": "#fffbff",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-low": "#f3f3f4",
+                    "surface-container-highest": "#e2e2e3",
+                    "on-tertiary-fixed": "#351000",
+                    "on-secondary-fixed-variant": "#332dbc",
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#004493",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#2f3132",
+                    "surface-bright": "#f9f9fa",
+                    "on-tertiary-fixed-variant": "#7c2e00",
+                    "background": "#f9f9fa",
+                    "inverse-primary": "#adc6ff",
+                    "secondary": "#4a47d2",
+                    "secondary-container": "#6462ec",
+                    "surface-container": "#eeeeef",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed-dim": "#ffb595",
+                    "secondary-fixed": "#e2dfff",
+                    "on-primary-container": "#fefcff",
+                    "tertiary-fixed": "#ffdbcc",
+                    "tertiary-container": "#c64f00",
+                    "outline": "#717786",
+                    "primary-fixed": "#d8e2ff",
+                    "on-error-container": "#93000a",
+                    "surface-container-lowest": "#ffffff",
+                    "surface": "#f9f9fa"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "toolbar-height": "52px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "sidebar-width": "260px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "display-lg": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "mono-sm": [
+                            "JetBrains Mono"
+                    ],
+                    "body-lg": [
+                            "\"Source Serif 4\""
+                    ],
+                    "headline-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "body-md": [
+                            "\"Source Serif 4\""
+                    ],
+                    "headline-md": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-sm": [
+                            "Plus Jakarta Sans"
+                    ],
+                    "label-md": [
+                            "Plus Jakarta Sans"
+                    ]
+            },
+            "fontSize": {
+                    "display-lg": [
+                            "34px",
+                            {
+                                    "lineHeight": "41px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "mono-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "18px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-sm": [
+                            "20px",
+                            {
+                                    "lineHeight": "25px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "30px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "label-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "500"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f6f6f7;
+        }
+        
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #0058bc;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0058bc;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+            border: 1px solid rgba(193, 198, 215, 0.3);
+        }
+    </style>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="shared/nav.js"></script>
+<style id="dark-mode-style">
+  html.dark { color-scheme: dark; }
+  /* .glass-panel dipakai untuk efek kartu glassmorphism di halaman ini, tapi
+     nilai rgba-nya hardcode putih transparan — tanpa baris ini kartu tetap
+     terang di mode gelap walau teks di dalamnya sudah dipaksa putih. */
+  html.dark .glass-panel { background: rgba(47, 49, 50, 0.85) !important; }
+  html.dark body { background-color: #0f0f12 !important; color: #f3f3f6 !important; }
+  html.dark header, html.dark aside { background-color: rgba(24,24,28,0.95) !important; border-color: rgba(255,255,255,0.1) !important; }
+  /* Kelas latar "surface" Tailwind (bg-surface, bg-surface/NN, bg-surface-container*,
+     bg-surface-variant, bg-surface-bright) memakai warna literal terang dari
+     tailwind.config, bukan CSS variable yang otomatis berubah saat mode gelap.
+     Sebelumnya hanya sebagian nama kelas didaftar manual, jadi varian dengan
+     modifier opacity (mis. bg-surface/60) lolos tidak ter-override dan kartu
+     tetap terang dengan teks putih di atasnya — nyaris tak terbaca. Selector
+     wildcard [class*="..."] menangkap SEMUA varian sekaligus. */
+  html.dark [class*="bg-surface"], html.dark [class*="bg-white"] { background-color: #1c1c22 !important; }
+  html.dark [class*="bg-surface-container-high"] { background-color: #26262e !important; }
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6, html.dark .text-on-surface { color: #fff !important; }
+  html.dark p, html.dark span, html.dark label, html.dark li, html.dark a:not(.bg-primary) { color: #c8c8d0 !important; }
+  html.dark .text-outline, html.dark .text-on-surface-variant { color: #9898a6 !important; }
+  html.dark .border, html.dark .border-b, html.dark [class*="border-outline"] { border-color: rgba(255,255,255,0.1) !important; }
+  html.dark input, html.dark textarea, html.dark select { background-color: #1e1e24 !important; color: #f3f3f6 !important; border-color: rgba(255,255,255,0.15) !important; }
+</style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-[#f6f6f7] min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<!-- SideNavBar (Collapsible Sidebar Drawer) -->
+<aside id="app-sidebar" class="w-[260px] h-[calc(100vh-68px)] fixed left-4 top-[60px] rounded-xl bg-white/95 dark:bg-[#18181c]/95 backdrop-blur-xl border border-outline-variant/30 z-40 p-4 flex flex-col justify-between shadow-xl transition-all duration-300 -translate-x-[300px]">
+  <div class="flex flex-col gap-1 overflow-y-auto">
+    <div class="mb-3 px-2 flex justify-between items-center"><p class="text-[11px] text-outline uppercase tracking-wider font-semibold">Studio AI</p><button onclick="toggleSidebar()" class="p-1 rounded text-outline hover:text-on-surface"><i class="ph ph-x text-[18px]"></i></button></div>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="index.html"><i class="ph ph-squares-four text-[20px]"></i> Dasbor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="generate.html"><i class="ph ph-magic-wand text-[20px]"></i> Buat Novel</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="editor.html"><i class="ph ph-pen-nib text-[20px]"></i> Editor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="tulis.html"><i class="ph ph-article text-[20px]"></i> Tulis Dokumen</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="seri.html"><i class="ph ph-books text-[20px]"></i> Seri & Jilid</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="mimicry.html"><i class="ph ph-brain text-[20px]"></i> Tiru Gaya (DNA)</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="library.html"><i class="ph ph-book-bookmark text-[20px]"></i> Perpustakaan</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="evaluasi.html"><i class="ph ph-chart-line-up text-[20px]"></i> Evaluasi Kualitas</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="ekspor.html"><i class="ph ph-export text-[20px]"></i> Ekspor Karya</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors !text-primary !bg-primary/10 font-semibold" href="pengaturan.html"><i class="ph ph-gear text-[20px]"></i> Pengaturan</a>
+  </div>
+  <div class="pt-3 border-t border-outline-variant/20 flex flex-col gap-2">
+    <button onclick="toggleTheme()" class="theme-toggle-btn w-full bg-surface-container text-on-surface hover:bg-surface-variant p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-moon text-[18px]"></i><span>Ganti Mode</span></button>
+    <a href="generate.html" class="w-full bg-primary text-on-primary rounded-lg py-2.5 font-label-md text-label-md flex justify-center items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"><i class="ph ph-plus text-[18px]"></i>Buat Novel Baru</a>
+    <button onclick="logoutApp()" class="w-full bg-transparent text-on-surface-variant hover:bg-surface-container p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-sign-out text-[18px]"></i><span>Keluar</span></button>
+  </div>
+</aside>
+<!-- Main Content Area -->
+<main class="pt-[68px] px-4 sm:px-6 lg:px-8 pb-24 min-h-screen transition-all duration-300 w-full box-border overflow-x-hidden">
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 left-0 right-0 h-[52px] bg-white/90 dark:bg-[#18181c]/90 backdrop-blur-md border-b border-outline-variant/20 flex items-center justify-between px-4 z-40">
+  <div class="flex items-center gap-3">
+    <button onclick="toggleSidebar()" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" title="Buka/Tutup Sidebar"><i class="ph ph-sidebar-simple text-[22px]"></i></button>
+    <div class="hidden sm:flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div class="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
+    <div class="flex items-center gap-0.5 bg-surface-container/60 p-0.5 rounded-lg border border-outline-variant/20">
+      <button onclick="window.history.back()" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Kembali"><i class="ph ph-arrow-left text-[18px]"></i></button>
+      <a href="index.html" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Beranda"><i class="ph ph-house text-[18px]"></i></a>
+    </div>
+    <a href="index.html" class="font-bold text-on-surface text-[17px] tracking-tight hover:opacity-80 flex items-center gap-2"><i class="ph ph-sparkle text-primary text-[20px]"></i><span class="hidden sm:inline">novelGENerator Studio</span></a>
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-moon text-[20px]"></i></button>
+    <a href="pengaturan.html" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-gear text-[20px]"></i></a>
+  </div>
+</header>
+<!-- Settings Canvas -->
+<div class="flex-1 p-gutter md:p-margin-desktop max-w-[1200px] w-full mx-auto flex flex-col md:flex-row gap-8 mt-4">
+<!-- Settings Categories (macOS style left pane) -->
+<aside class="w-full md:w-[240px] flex-shrink-0">
+<nav class="flex flex-col gap-1">
+<a class="px-3 py-1.5 rounded-md font-label-md text-label-md bg-primary text-white flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="person">person</span>
+                        Account
+                    </a>
+<a class="px-3 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="palette">palette</span>
+                        Tampilan
+                    </a>
+<a class="px-3 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="psychology">psychology</span>
+                        AI Preferences
+                    </a>
+<a class="px-3 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+                        Notifications
+                    </a>
+<a class="px-3 py-1.5 rounded-md font-label-md text-label-md text-on-surface-variant hover:bg-surface-variant transition-colors flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="credit_card">credit_card</span>
+                        Billing
+                    </a>
+</nav>
+</aside>
+<!-- Settings Details (Right pane) -->
+<div class="flex-1 max-w-[700px]">
+<section class="glass-panel rounded-xl p-6 mb-8">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-6 flex items-center gap-2">
+                        Profile Information
+                    </h3>
+<div class="flex items-center gap-6 mb-8">
+<div class="relative">
+<!-- Avatar dibangkitkan dari inisial nama, tanpa gambar contoh dari luar -->
+<div id="avatar-inisial" class="w-20 h-20 rounded-full border border-outline-variant/30 bg-gradient-to-br from-primary/25 to-primary/5 flex items-center justify-center">
+<span class="font-headline-md text-[28px] text-primary/70">P</span>
+</div>
+<button class="absolute bottom-0 right-0 w-6 h-6 bg-white rounded-full border border-outline-variant flex items-center justify-center shadow-sm text-on-surface hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[14px]" data-icon="edit">edit</span>
+</button>
+</div>
+<div>
+<button class="px-4 py-1.5 bg-primary text-white rounded-md font-label-md text-label-md shadow-sm hover:bg-primary-fixed-variant transition-colors">
+                                Change Photo
+                            </button>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-2">JPG, GIF or PNG. Max size of 800K</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex flex-col gap-1">
+<label for="profil-nama" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Nama Tampilan</label>
+<input id="profil-nama" oninput="simpanProfil()" placeholder="Nama Anda" class="w-full bg-white border border-outline-variant/50 rounded-md px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label for="profil-email" class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Alamat Email</label>
+<input id="profil-email" oninput="simpanProfil()" placeholder="opsional" class="w-full bg-white border border-outline-variant/50 rounded-md px-3 py-2 font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all" type="email"/>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Profil disimpan di perangkat ini saja.</p>
+</div>
+</section>
+<section class="glass-panel rounded-xl p-6">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-6">Preferences</h3>
+<div class="space-y-6">
+<div class="flex items-center justify-between py-2 border-b border-outline-variant/10">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Simpan Otomatis</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Simpan draf secara otomatis saat membuat teks</p>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 checked:right-0 checked:left-auto" id="toggle1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer" for="toggle1"></label>
+</div>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-outline-variant/10">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Model Bawaan</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Mesin AI yang dipakai secara default</p>
+</div>
+<!-- Diisi dari /api/models — daftar model yang benar-benar didukung -->
+<select id="model-bawaan" onchange="simpanModelBawaan(this.value)" class="bg-white border border-outline-variant/50 rounded-md px-3 py-1.5 font-label-md text-label-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary max-w-[280px]">
+<option value="">Memuat…</option>
+</select>
+</div>
+<div class="flex items-center justify-between py-2">
+<div>
+<h4 class="font-label-md text-label-md text-on-surface">Data Sharing</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Allow anonymous usage data to improve models</p>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 top-0 left-0 checked:right-0 checked:left-auto" id="toggle2" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer" for="toggle2"></label>
+</div>
+</div>
+</div>
+</section>
+<div class="mt-8 flex justify-end gap-3">
+<button class="px-4 py-2 bg-transparent border border-outline-variant/50 text-on-surface rounded-md font-label-md text-label-md hover:bg-surface-variant transition-colors">Batal</button>
+<button class="px-4 py-2 bg-primary text-white rounded-md font-label-md text-label-md shadow-sm hover:bg-primary-fixed-variant transition-colors shadow-[0_2px_4px_rgba(0,0,0,0.1)]">
+                        Save Changes
+                    </button>
+</div>
+</div>
+</div>
+</main>
+<script>
+// ══════════════════════════════════════════════════════════
+// PROFIL — disimpan lokal di perangkat
+// ══════════════════════════════════════════════════════════
+
+const KUNCI_PROFIL = 'novelgen_profil';
+
+function perbaruiAvatar(nama) {
+  const el = document.querySelector('#avatar-inisial span');
+  if (!el) return;
+  const teks = (nama || '').trim();
+  el.textContent = teks ? teks.charAt(0).toUpperCase() : 'P';
+}
+
+function simpanProfil() {
+  const nama = document.getElementById('profil-nama')?.value || '';
+  const email = document.getElementById('profil-email')?.value || '';
+  localStorage.setItem(KUNCI_PROFIL, JSON.stringify({ nama, email }));
+  perbaruiAvatar(nama);
+}
+
+function muatProfil() {
+  let p = {};
+  try { p = JSON.parse(localStorage.getItem(KUNCI_PROFIL) || '{}'); } catch (_) {}
+  const namaEl = document.getElementById('profil-nama');
+  const emailEl = document.getElementById('profil-email');
+  if (namaEl) namaEl.value = p.nama || '';
+  if (emailEl) emailEl.value = p.email || '';
+  perbaruiAvatar(p.nama);
+}
+
+// ── Model bawaan ──
+const KUNCI_MODEL = 'novelgen_model_bawaan';
+
+function simpanModelBawaan(id) {
+  if (id) localStorage.setItem(KUNCI_MODEL, id);
+}
+
+async function muatModelBawaan() {
+  const sel = document.getElementById('model-bawaan');
+  if (!sel) return;
+  try {
+    const data = await (await fetch('/api/models')).json();
+    const models = data.models || [];
+    sel.innerHTML = models
+      .map(m => `<option value="${m.id}">${m.free ? '🆓 ' : '💳 '}${m.label}</option>`)
+      .join('');
+    sel.value = localStorage.getItem(KUNCI_MODEL) || data.default || (models[0] && models[0].id) || '';
+  } catch (err) {
+    console.error('Gagal memuat model:', err);
+    sel.innerHTML = '<option value="">Gagal memuat daftar model</option>';
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => { muatProfil(); muatModelBawaan(); });
+</script>
+</body></html>

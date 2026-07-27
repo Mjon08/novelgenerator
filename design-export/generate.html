@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buat Novel — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  /* ── Generate-specific ──────────────────────────────────── */
+  .gen-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 900px) { .gen-layout { grid-template-columns: 1fr; } }
+
+  /* Output / streaming area */
+  .output-box {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-outline-variant);
+    border-top: 4px solid var(--color-outline-variant);
+    border-radius: var(--radius);
+    padding: 20px;
+    white-space: pre-wrap;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    line-height: 1.9;
+    min-height: 200px;
+    max-height: 55vh;
+    overflow-y: auto;
+    color: var(--color-on-surface);
+    transition: border-top-color 0.2s;
+  }
+  .output-box.streaming {
+    border-top-color: var(--color-primary);
+    background: var(--color-surface-low);
+  }
+
+  /* Chapter list items */
+  .chapter-list { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+  .chapter-item {
+    background: var(--color-surface-low);
+    border: 1px solid var(--color-outline-variant);
+    border-left: 3px solid var(--color-outline-variant);
+    border-radius: var(--radius-sm) var(--radius) var(--radius) var(--radius-sm);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-left-color 0.2s;
+  }
+  .chapter-item.done  { border-left-color: var(--color-primary); }
+  .chapter-item.error { border-left-color: var(--color-error); }
+  .chapter-num {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-outline);
+    min-width: 50px;
+    letter-spacing: 0.04em;
+  }
+  .chapter-title  { flex: 1; font-size: 0.88rem; font-weight: 500; }
+  .chapter-status { font-size: 0.75rem; white-space: nowrap; }
+  .progress-text  {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-on-surface-variant);
+    margin-top: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Series badge */
+  .series-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--color-primary-fixed);
+    border: 1px solid var(--color-primary-container);
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    color: var(--color-on-primary-container);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+
+  /* Output panel header */
+  .output-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    gap: 12px;
+  }
+  .output-title {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+
+  /* Paper preview panel on right */
+  .paper-preview {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+  }
+  .paper-header {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--color-outline-variant);
+    background: var(--color-surface-high);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .paper-header-label { font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-outline); letter-spacing: 0.08em; text-transform: uppercase; }
+  .paper-dots { display: flex; gap: 5px; }
+  .paper-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-outline-variant); }
+  .paper-body {
+    flex: 1;
+    padding: 24px 28px;
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    line-height: 1.9;
+    color: var(--color-on-surface);
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a href="index.html">Beranda</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Buat Novel</span>
+      </div>
+      <h1 class="page-title">Buat Novel Baru</h1>
+      <p class="page-subtitle">Generate novel lengkap dengan bantuan AI dalam Bahasa Indonesia</p>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Series badge -->
+      <div id="series-badge" style="display:none;" class="series-badge">
+        <span class="material-symbols-outlined" style="font-size:16px;">account_tree</span>
+        <span id="series-badge-text"></span>
+      </div>
+
+      <!-- ── FORM PANEL ──────────────────────────────────── -->
+      <div id="form-panel">
+        <div class="gen-layout">
+
+          <!-- Left: Form inputs -->
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <div class="card-header">
+                <h2 class="card-title">Informasi Novel</h2>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">Judul Novel *</label>
+                  <input class="form-input" id="f-judul" type="text" placeholder="cth. Cinta di Balik Badai" />
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Genre</label>
+                    <select class="form-select" id="f-genre">
+                      <option>Romance Kantoran (CEO/Boss)</option>
+                      <option>Romance Kampus</option>
+                      <option>Romance Islami (Halal)</option>
+                      <option>Horor Kuntilanak</option>
+                      <option>Thriller Misteri</option>
+                      <option>Fantasi Kerajaan Nusantara</option>
+                      <option>Teenlit SMA</option>
+                      <option>Slice of Life Indonesia</option>
+                      <option>Drama Keluarga</option>
+                      <option>Action Thriller</option>
+                      <option>Komedi Romantis</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Gaya Bahasa</label>
+                    <select class="form-select" id="f-gaya-bahasa">
+                      <option value="semi-formal">Semi-formal</option>
+                      <option value="formal">Formal</option>
+                      <option value="kasual">Kasual</option>
+                      <option value="puitis">Puitis</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Gaya Penulisan</label>
+                    <select class="form-select" id="f-gaya-penulisan">
+                      <option value="deskriptif">Deskriptif</option>
+                      <option value="dialogis">Dialogis</option>
+                      <option value="naratif">Naratif</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Jumlah Bab</label>
+                    <input class="form-input" id="f-jumlah-bab" type="number" value="5" min="1" max="50" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="display:flex;justify-content:space-between;">
+                    <span>Target Kata per Bab</span>
+                    <span style="font-family:var(--font-mono);font-weight:400;color:var(--color-outline);" id="kata-label">2000</span>
+                  </label>
+                  <input class="form-input" id="f-kata-per-bab" type="range" value="2000" min="500" max="10000" step="500"
+                    oninput="document.getElementById('kata-label').textContent=this.value"
+                    style="padding:8px 0;background:transparent;border-bottom-color:var(--color-outline-variant);" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sinopsis / Premis Awal</label>
+                  <textarea class="form-textarea" id="f-sinopsis" rows="3" placeholder="Ceritakan garis besar cerita, konflik utama, atau premis yang ingin kamu bangun…"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Karakter Utama <span style="font-weight:400;color:var(--color-outline);">(opsional)</span></label>
+                  <textarea class="form-textarea" id="f-karakter" rows="2" style="min-height:70px;" placeholder="cth. Arya (28th, arsitek ambisius), Dira (26th, florist yang hangat)"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Setting / Latar Cerita <span style="font-weight:400;color:var(--color-outline);">(opsional)</span></label>
+                  <textarea class="form-textarea" id="f-setting" rows="2" style="min-height:70px;" placeholder="cth. Jakarta modern, 2024. Gedung pencakar langit dan lorong pasar tradisional…"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opsi Lanjutan -->
+            <div class="card" style="margin-bottom:20px;">
+              <div class="card-header"><h2 class="card-title">Model AI & Opsi Lanjutan</h2></div>
+              <div class="card-body">
+                <div class="form-group" style="margin-bottom:16px;">
+                  <label class="form-label">Pilih Model AI (Free / Default)</label>
+                  <select class="form-select" id="f-model-ai" style="font-size:0.85rem;">
+                    <optgroup label="Anthropic (Default)">
+                      <option value="claude-opus-4-8" selected>Claude Opus (Default Standard)</option>
+                      <option value="claude-sonnet-4-6">Claude Sonnet (Cepat & Hemat)</option>
+                    </optgroup>
+                    <optgroup label="OpenRouter 100% Free Models">
+                      <option value="openrouter/free">⚡ Free Models Auto Router (Rekomendasi OpenRouter)</option>
+                      <option value="google/gemma-4-31b-it:free">Google: Gemma 4 31B (Free)</option>
+                      <option value="google/gemma-4-26b-a4b-it:free">Google: Gemma 4 26B A4B (Free)</option>
+                      <option value="inclusionai/ling-3.0-flash:free">Ling 3.0 Flash 124B (Free)</option>
+                      <option value="poolside/laguna-s-2.1:free">Poolside: Laguna S 2.1 (Free)</option>
+                      <option value="poolside/laguna-xs-2.1:free">Poolside: Laguna XS 2.1 (Free)</option>
+                      <option value="poolside/laguna-m.1:free">Poolside: Laguna M.1 (Free)</option>
+                      <option value="cohere/north-mini-code:free">Cohere: North Mini Code (Free)</option>
+                      <option value="nvidia/nemotron-3-ultra-550b-a55b:free">NVIDIA: Nemotron 3 Ultra 550B (Free)</option>
+                      <option value="nvidia/nemotron-3-super-120b-a12b:free">NVIDIA: Nemotron 3 Super 120B (Free)</option>
+                      <option value="nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free">NVIDIA: Nemotron 3 Nano Omni (Free)</option>
+                      <option value="nvidia/nemotron-3-nano-30b-a3b:free">NVIDIA: Nemotron 3 Nano 30B (Free)</option>
+                      <option value="nvidia/nemotron-nano-12b-v2-vl:free">NVIDIA: Nemotron Nano 12B (Free)</option>
+                      <option value="nvidia/nemotron-nano-9b-v2:free">NVIDIA: Nemotron Nano 9B (Free)</option>
+                      <option value="openai/gpt-oss-20b:free">OpenAI: GPT-OSS 20B (Free)</option>
+                    </optgroup>
+                  </select>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    Gunakan Perpustakaan RAG
+                    <small id="rag-count-text">Memuat jumlah novel referensi…</small>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="f-use-rag" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+                <div class="toggle-row">
+                  <div class="toggle-label">
+                    Gunakan DNA Gaya Penulis
+                    <small>Tiru gaya penulisan dari profil DNA tersimpan</small>
+                  </div>
+                  <label class="toggle">
+                    <input type="checkbox" id="f-use-dna" onchange="toggleDnaSelect(this)" />
+                    <span class="toggle-track"></span>
+                  </label>
+                </div>
+                <div id="dna-select-wrap" style="display:none; margin-top:8px;">
+                  <select class="form-select" id="f-dna-id">
+                    <option value="">Memuat profil DNA…</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+
+            <button class="btn btn-primary btn-lg" id="btn-generate" onclick="startGenerate()" style="width:100%;">
+              <span class="spinner" id="gen-spinner" style="display:none;"></span>
+              <span class="material-symbols-outlined" style="font-size:18px;" id="gen-icon">auto_awesome</span>
+              Generate Novel
+            </button>
+          </div>
+
+          <!-- Right: Paper preview (aesthetic, static) -->
+          <div class="paper-preview">
+            <div class="paper-header">
+              <span class="paper-header-label">DRAFT // 001</span>
+              <div class="paper-dots">
+                <div class="paper-dot"></div>
+                <div class="paper-dot"></div>
+                <div class="paper-dot"></div>
+              </div>
+            </div>
+            <div class="paper-body" style="color:var(--color-on-surface-variant); font-style:italic;">
+              <p style="margin-bottom:1.5rem;">Isi novel kamu akan muncul di sini saat proses generate berjalan — setiap bab ditulis secara berurutan dengan konteks dari bab sebelumnya.</p>
+              <p>Masukkan sinopsis dan detail karakter di sebelah kiri, lalu tekan <strong style="color:var(--color-primary);font-style:normal;">Generate Novel</strong> untuk memulai.</p>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /#form-panel -->
+
+      <!-- ── OUTPUT PANEL ────────────────────────────────── -->
+      <div id="output-panel" style="display:none;">
+
+        <div class="output-header">
+          <h2 class="output-title" id="output-title">Menggenerate novel…</h2>
+          <span id="output-badge" class="badge badge-accent">
+            <span class="spinner" style="width:10px;height:10px;border-width:1.5px;"></span>
+            Sedang berjalan
+          </span>
+        </div>
+
+        <div class="progress-wrap mb-8">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="progress-text" id="progress-text">Mempersiapkan outline…</div>
+
+        <!-- Chapter list -->
+        <div id="chapter-list" class="chapter-list" style="margin-top:16px;"></div>
+
+        <!-- Current streaming chapter -->
+        <div id="streaming-section" style="display:none; margin-top:16px;">
+          <div class="progress-text mb-8" id="streaming-label"></div>
+          <div class="output-box streaming" id="streaming-box"></div>
+        </div>
+
+        <!-- Action bar after done -->
+        <div class="action-bar" id="action-bar" style="display:none;">
+          <span style="font-size:0.88rem; color:var(--success); display:flex;align-items:center;gap:6px;">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--success);">check_circle</span>
+            Novel selesai dibuat!
+          </span>
+          <button class="btn btn-primary btn-sm" id="btn-open-editor" onclick="openInEditor()">
+            <span class="material-symbols-outlined" style="font-size:14px;">history_edu</span> Editor
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-lihat-eval" onclick="lihatEvaluasi()">
+            <span class="material-symbols-outlined" style="font-size:14px;">analytics</span> Evaluasi
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-ekspor" onclick="ekspor()">
+            <span class="material-symbols-outlined" style="font-size:14px;">file_export</span> Ekspor
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-save-lib" onclick="toggleLibrary()">
+            <span class="material-symbols-outlined" style="font-size:14px;">bookmark_add</span> Simpan ke Perpustakaan
+          </button>
+          <button class="btn btn-ghost btn-sm" onclick="resetForm()">
+            <span class="material-symbols-outlined" style="font-size:14px;">refresh</span> Novel Baru
+          </button>
+        </div>
+
+      </div><!-- /#output-panel -->
+
+    </div>
+  </main>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('generate');
+
+  const params  = new URLSearchParams(location.search);
+  const seriId  = params.get('seri_id');
+  const jilidId = params.get('jilid_id');
+
+  if (seriId) {
+    document.getElementById('series-badge').style.display = 'inline-flex';
+    fetch('/api/seri/' + seriId)
+      .then(r => r.json())
+      .then(data => {
+        let text = data.judul;
+        if (jilidId) {
+          const j = (data.jilid || []).find(x => String(x.id) === jilidId);
+          if (j) text += ' › Jilid ' + j.nomor + ': ' + j.judul;
+        }
+        document.getElementById('series-badge-text').textContent = text;
+      })
+      .catch(() => {});
+  }
+
+  // Load RAG count
+  fetch('/api/library')
+    .then(r => r.json())
+    .then(data => {
+      const n = data.length || 0;
+      document.getElementById('rag-count-text').textContent = n > 0
+        ? `${n} novel referensi tersedia`
+        : 'Belum ada novel referensi — upload di Perpustakaan';
+      if (n > 0) document.getElementById('f-use-rag').checked = true;
+    })
+    .catch(() => {});
+
+  // Load DNA list
+  fetch('/api/mimicry/dna/list')
+    .then(r => r.json())
+    .then(data => {
+      const sel = document.getElementById('f-dna-id');
+      if (!data || data.length === 0) {
+        sel.innerHTML = '<option value="">Belum ada profil DNA</option>';
+      } else {
+        sel.innerHTML = data.map(d => `<option value="${d.id}">${d.source_title}</option>`).join('');
+      }
+    })
+    .catch(() => {});
+
+  function toggleDnaSelect(cb) {
+    document.getElementById('dna-select-wrap').style.display = cb.checked ? 'block' : 'none';
+  }
+
+  let currentNovelId = null;
+  let isSavedToLib = false;
+  const babContents = [];
+
+  async function startGenerate() {
+    const judul = document.getElementById('f-judul').value.trim();
+    if (!judul) { toast.error('Judul novel wajib diisi'); return; }
+
+    const btn = document.getElementById('btn-generate');
+    btn.disabled = true;
+    document.getElementById('gen-spinner').style.display = '';
+    document.getElementById('gen-icon').style.display = 'none';
+
+    document.getElementById('form-panel').style.display = 'none';
+    document.getElementById('output-panel').style.display = '';
+    document.getElementById('output-title').textContent = 'Membuat outline untuk "' + judul + '"…';
+
+    try {
+      const payload = {
+        judul,
+        genre: document.getElementById('f-genre').value,
+        gaya_bahasa: document.getElementById('f-gaya-bahasa').value,
+        gaya_penulisan: document.getElementById('f-gaya-penulisan').value,
+        jumlah_bab: parseInt(document.getElementById('f-jumlah-bab').value) || 5,
+        target_kata_per_bab: parseInt(document.getElementById('f-kata-per-bab').value) || 2000,
+        sinopsis_awal: document.getElementById('f-sinopsis').value,
+        karakter_utama: document.getElementById('f-karakter').value,
+        setting_cerita: document.getElementById('f-setting').value,
+        use_rag: document.getElementById('f-use-rag').checked,
+        dna_id: document.getElementById('f-use-dna').checked ? document.getElementById('f-dna-id').value : null,
+        model_ai: document.getElementById('f-model-ai').value,
+      };
+
+
+      // ── Step 1: Generate outline (JSON response) ──
+      document.getElementById('progress-text').textContent = 'Membuat outline cerita…';
+      setProgress(10);
+
+      const outlineRes = await fetch('/api/generate-outline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!outlineRes.ok) {
+        const errData = await outlineRes.json().catch(() => ({}));
+        throw new Error(errData.error || 'Gagal generate outline');
+      }
+      const outlineData = await outlineRes.json();
+      if (!outlineData.success) throw new Error(outlineData.error || 'Outline gagal dibuat');
+
+      const chapters = outlineData.chapters || [];
+      if (chapters.length === 0) throw new Error('Outline tidak menghasilkan daftar bab');
+      currentNovelId = outlineData.novel_id || null;
+      const fullOutline = outlineData.outline || {};
+
+      // Render chapter list
+      const cl = document.getElementById('chapter-list');
+      cl.innerHTML = chapters.map((ch, i) => `
+        <div class="chapter-item" id="ch-item-${i}">
+          <div class="chapter-num">Bab ${i+1}</div>
+          <div class="chapter-title">${ch.judul || ch.title || 'Bab ' + (i+1)}</div>
+          <div class="chapter-status" id="ch-status-${i}" style="color:var(--color-outline);">⏳ Menunggu</div>
+        </div>
+      `).join('');
+
+      setProgress(20);
+
+      // ── Step 2: Generate chapters via SSE ──
+      const streamSection = document.getElementById('streaming-section');
+      const streamBox     = document.getElementById('streaming-box');
+      const streamLabel   = document.getElementById('streaming-label');
+      streamSection.style.display = '';
+      babContents.length = 0;
+
+      const allChaptersData = [];
+
+      for (let i = 0; i < chapters.length; i++) {
+        const ch  = chapters[i];
+        const pct = 20 + Math.round((i / chapters.length) * 75);
+        setProgress(pct);
+        document.getElementById('progress-text').textContent = `Menulis Bab ${i+1} dari ${chapters.length}…`;
+        document.getElementById('ch-status-' + i).innerHTML = '<span class="spinner spinner-dark" style="width:10px;height:10px;border-width:1.5px;"></span> Menulis…';
+        streamLabel.textContent = `Bab ${i+1}: ${ch.judul || ch.title || ''}`;
+        streamBox.textContent = '';
+        streamBox.classList.add('streaming');
+
+        const ringkasanSebelumnya = babContents.length > 0
+          ? babContents[babContents.length - 1].slice(0, 600) + '…'
+          : '';
+
+        const res = await fetch('/api/generate-chapter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chapter_index: i,
+            chapter_outline: ch,
+            ringkasan_bab_sebelumnya: ringkasanSebelumnya,
+            outline: JSON.stringify(fullOutline).slice(0, 2000),
+            ...payload
+          })
+        });
+
+        if (!res.ok || !res.body) {
+          document.getElementById('ch-status-' + i).textContent = '✖ Gagal';
+          babContents.push('');
+          continue;
+        }
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let chapterText = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const d = JSON.parse(line.slice(6));
+                if (d.text) {
+                  chapterText += d.text;
+                  streamBox.textContent += d.text;
+                  streamBox.scrollTop = streamBox.scrollHeight;
+                }
+              } catch(e) {}
+            }
+          }
+        }
+
+        babContents.push(chapterText);
+        allChaptersData.push({ number: i + 1, title: ch.judul || ch.title || `Bab ${i+1}`, content: chapterText });
+        const statusEl = document.getElementById('ch-status-' + i);
+        statusEl.textContent = '✓ Selesai';
+        statusEl.style.color = 'var(--success)';
+        document.getElementById('ch-item-' + i).classList.add('done');
+        streamBox.classList.remove('streaming');
+      }
+
+      // ── Step 3: Save novel ──
+      setProgress(95);
+      document.getElementById('progress-text').textContent = 'Menyimpan novel…';
+      try {
+        const saveRes = await fetch('/api/save-novel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: judul,
+            genre: payload.genre,
+            outline: JSON.stringify(fullOutline),
+            chapters: allChaptersData
+          })
+        });
+        const saveData = await saveRes.json();
+        if (saveData.id) currentNovelId = saveData.id;
+      } catch(saveErr) { /* non-fatal */ }
+
+      setProgress(100);
+      document.getElementById('progress-text').textContent = 'Novel selesai!';
+      document.getElementById('output-title').textContent = '"' + judul + '" — Selesai';
+      document.getElementById('output-badge').innerHTML = '✓ Selesai';
+      document.getElementById('output-badge').className = 'badge badge-success';
+      document.getElementById('action-bar').style.display = 'flex';
+      toast.success('Novel "' + judul + '" berhasil dibuat!');
+
+    } catch(err) {
+      toast.error('Gagal generate novel: ' + err.message);
+      document.getElementById('output-badge').textContent = '✖ Gagal';
+      document.getElementById('output-badge').className = 'badge badge-error';
+      btn.disabled = false;
+      document.getElementById('gen-spinner').style.display = 'none';
+      document.getElementById('gen-icon').style.display = '';
+      document.getElementById('form-panel').style.display = '';
+      document.getElementById('output-panel').style.display = 'none';
+    }
+  }
+
+  function setProgress(pct) {
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+
+  async function openInEditor() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    try {
+      const res = await fetch('/api/editor/dokumen/baru', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ novel_id: currentNovelId, judul: document.getElementById('f-judul').value || 'Novel Baru' })
+      });
+      const data = await res.json();
+      if (data.id) {
+        if (jilidId && seriId) {
+          await fetch('/api/seri/' + seriId + '/jilid/' + jilidId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'sedang_ditulis', novel_id: currentNovelId })
+          });
+        }
+        window.location.href = 'editor.html?id=' + data.id;
+      } else {
+        toast.error(data.error || 'Gagal membuat dokumen editor');
+      }
+    } catch(err) {
+      toast.error('Gagal membuka editor: ' + err.message);
+    }
+  }
+
+  function lihatEvaluasi() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    window.location.href = 'evaluasi.html?novel_id=' + currentNovelId;
+  }
+
+  function ekspor() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    window.location.href = 'ekspor.html?novel_id=' + currentNovelId;
+  }
+
+  async function toggleLibrary() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    isSavedToLib = !isSavedToLib;
+    try {
+      await fetch('/api/novels/' + currentNovelId + '/update-library', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_in_library: isSavedToLib ? 1 : 0 })
+      });
+      const btn2 = document.getElementById('btn-save-lib');
+      if (isSavedToLib) {
+        btn2.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">bookmark_added</span> Tersimpan';
+        toast.success('Novel ditambahkan ke perpustakaan');
+      } else {
+        btn2.innerHTML = '<span class="material-symbols-outlined" style="font-size:14px;">bookmark_add</span> Simpan ke Perpustakaan';
+        toast.info('Novel dihapus dari perpustakaan');
+      }
+    } catch(err) {
+      toast.error('Gagal mengubah status perpustakaan');
+    }
+  }
+
+  function resetForm() {
+    currentNovelId = null;
+    isSavedToLib = false;
+    document.getElementById('f-judul').value = '';
+    document.getElementById('f-sinopsis').value = '';
+    document.getElementById('f-karakter').value = '';
+    document.getElementById('f-setting').value = '';
+    document.getElementById('btn-generate').disabled = false;
+    document.getElementById('gen-spinner').style.display = 'none';
+    document.getElementById('gen-icon').style.display = '';
+    document.getElementById('output-panel').style.display = 'none';
+    document.getElementById('form-panel').style.display = '';
+    document.getElementById('action-bar').style.display = 'none';
+    document.getElementById('chapter-list').innerHTML = '';
+    setProgress(0);
+  }
+</script>
+</body>
+</html>

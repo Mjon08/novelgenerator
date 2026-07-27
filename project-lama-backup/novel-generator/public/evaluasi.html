@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>novelGENerator - Analytics</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#dadadb",
+                      "outline-variant": "#c1c6d7",
+                      "surface-container-high": "#e8e8e9",
+                      "primary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed-dim": "#ffb595",
+                      "error-container": "#ffdad6",
+                      "tertiary": "#9e3d00",
+                      "surface-container-highest": "#e2e2e3",
+                      "surface-container-lowest": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface": "#f9f9fa",
+                      "on-secondary-fixed": "#0c006b",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#6462ec",
+                      "on-tertiary-fixed": "#351000",
+                      "on-primary-container": "#fefcff",
+                      "inverse-surface": "#2f3132",
+                      "primary-container": "#0070eb",
+                      "primary-fixed": "#d8e2ff",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e2e2e3",
+                      "tertiary-container": "#c64f00",
+                      "on-surface-variant": "#414755",
+                      "on-tertiary-fixed-variant": "#7c2e00",
+                      "on-secondary-container": "#fffbff",
+                      "on-surface": "#1a1c1d",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-low": "#f3f3f4",
+                      "on-background": "#1a1c1d",
+                      "secondary-fixed": "#e2dfff",
+                      "background": "#f9f9fa",
+                      "outline": "#717786",
+                      "inverse-on-surface": "#f0f1f2",
+                      "surface-bright": "#f9f9fa",
+                      "on-tertiary-container": "#fffbff",
+                      "secondary": "#4a47d2",
+                      "on-primary": "#ffffff",
+                      "surface-tint": "#005bc1",
+                      "on-primary-fixed": "#001a41",
+                      "inverse-primary": "#adc6ff",
+                      "surface-container": "#eeeeef",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed": "#ffdbcc",
+                      "on-secondary-fixed-variant": "#332dbc",
+                      "on-primary-fixed-variant": "#004493",
+                      "secondary-fixed-dim": "#c2c1ff",
+                      "primary": "#0058bc"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "sidebar-width": "260px",
+                      "gutter": "16px",
+                      "margin-desktop": "32px",
+                      "margin-mobile": "16px",
+                      "toolbar-height": "52px"
+              },
+              "fontFamily": {
+                      "body-lg": [
+                              "\"Source Serif 4\""
+                      ],
+                      "display-lg": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-sm": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "headline-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body-md": [
+                              "\"Source Serif 4\""
+                      ],
+                      "mono-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "label-md": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label-sm": [
+                              "Plus Jakarta Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "34px",
+                              {
+                                      "lineHeight": "41px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "25px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "30px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Source+Serif+4:wght@400;600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f6f6f7; }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(193, 198, 215, 0.3); }
+        .window-dots { display: flex; gap: 8px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot-red { background-color: #ff5f56; }
+        .dot-yellow { background-color: #ffbd2e; }
+        .dot-green { background-color: #27c93f; }
+    </style>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="shared/nav.js"></script>
+<style id="dark-mode-style">
+  html.dark { color-scheme: dark; }
+  /* .glass-panel dipakai untuk efek kartu glassmorphism di halaman ini, tapi
+     nilai rgba-nya hardcode putih transparan — tanpa baris ini kartu tetap
+     terang di mode gelap walau teks di dalamnya sudah dipaksa putih. */
+  html.dark .glass-panel { background: rgba(47, 49, 50, 0.85) !important; }
+  html.dark body { background-color: #0f0f12 !important; color: #f3f3f6 !important; }
+  html.dark header, html.dark aside { background-color: rgba(24,24,28,0.95) !important; border-color: rgba(255,255,255,0.1) !important; }
+  /* Kelas latar "surface" Tailwind (bg-surface, bg-surface/NN, bg-surface-container*,
+     bg-surface-variant, bg-surface-bright) memakai warna literal terang dari
+     tailwind.config, bukan CSS variable yang otomatis berubah saat mode gelap.
+     Sebelumnya hanya sebagian nama kelas didaftar manual, jadi varian dengan
+     modifier opacity (mis. bg-surface/60) lolos tidak ter-override dan kartu
+     tetap terang dengan teks putih di atasnya — nyaris tak terbaca. Selector
+     wildcard [class*="..."] menangkap SEMUA varian sekaligus. */
+  html.dark [class*="bg-surface"], html.dark [class*="bg-white"] { background-color: #1c1c22 !important; }
+  html.dark [class*="bg-surface-container-high"] { background-color: #26262e !important; }
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6, html.dark .text-on-surface { color: #fff !important; }
+  html.dark p, html.dark span, html.dark label, html.dark li, html.dark a:not(.bg-primary) { color: #c8c8d0 !important; }
+  html.dark .text-outline, html.dark .text-on-surface-variant { color: #9898a6 !important; }
+  html.dark .border, html.dark .border-b, html.dark [class*="border-outline"] { border-color: rgba(255,255,255,0.1) !important; }
+  html.dark input, html.dark textarea, html.dark select { background-color: #1e1e24 !important; color: #f3f3f6 !important; border-color: rgba(255,255,255,0.15) !important; }
+</style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-[#f6f6f7] min-h-screen">
+<!-- SideNavBar -->
+<!-- SideNavBar (Collapsible Sidebar Drawer) -->
+<aside id="app-sidebar" class="w-[260px] h-[calc(100vh-68px)] fixed left-4 top-[60px] rounded-xl bg-white/95 dark:bg-[#18181c]/95 backdrop-blur-xl border border-outline-variant/30 z-40 p-4 flex flex-col justify-between shadow-xl transition-all duration-300 -translate-x-[300px]">
+  <div class="flex flex-col gap-1 overflow-y-auto">
+    <div class="mb-3 px-2 flex justify-between items-center"><p class="text-[11px] text-outline uppercase tracking-wider font-semibold">Studio AI</p><button onclick="toggleSidebar()" class="p-1 rounded text-outline hover:text-on-surface"><i class="ph ph-x text-[18px]"></i></button></div>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="index.html"><i class="ph ph-squares-four text-[20px]"></i> Dasbor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="generate.html"><i class="ph ph-magic-wand text-[20px]"></i> Buat Novel</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="editor.html"><i class="ph ph-pen-nib text-[20px]"></i> Editor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="tulis.html"><i class="ph ph-article text-[20px]"></i> Tulis Dokumen</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="seri.html"><i class="ph ph-books text-[20px]"></i> Seri & Jilid</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="mimicry.html"><i class="ph ph-brain text-[20px]"></i> Tiru Gaya (DNA)</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="library.html"><i class="ph ph-book-bookmark text-[20px]"></i> Perpustakaan</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors !text-primary !bg-primary/10 font-semibold" href="evaluasi.html"><i class="ph ph-chart-line-up text-[20px]"></i> Evaluasi Kualitas</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="ekspor.html"><i class="ph ph-export text-[20px]"></i> Ekspor Karya</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="pengaturan.html"><i class="ph ph-gear text-[20px]"></i> Pengaturan</a>
+  </div>
+  <div class="pt-3 border-t border-outline-variant/20 flex flex-col gap-2">
+    <button onclick="toggleTheme()" class="theme-toggle-btn w-full bg-surface-container text-on-surface hover:bg-surface-variant p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-moon text-[18px]"></i><span>Ganti Mode</span></button>
+    <a href="generate.html" class="w-full bg-primary text-on-primary rounded-lg py-2.5 font-label-md text-label-md flex justify-center items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"><i class="ph ph-plus text-[18px]"></i>Buat Novel Baru</a>
+    <button onclick="logoutApp()" class="w-full bg-transparent text-on-surface-variant hover:bg-surface-container p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-sign-out text-[18px]"></i><span>Keluar</span></button>
+  </div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="pt-[68px] px-4 sm:px-6 lg:px-8 pb-24 min-h-screen transition-all duration-300 w-full box-border overflow-x-hidden">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 right-0 h-[52px] bg-white/90 dark:bg-[#18181c]/90 backdrop-blur-md border-b border-outline-variant/20 flex items-center justify-between px-4 z-40">
+  <div class="flex items-center gap-3">
+    <button onclick="toggleSidebar()" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" title="Buka/Tutup Sidebar"><i class="ph ph-sidebar-simple text-[22px]"></i></button>
+    <div class="hidden sm:flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div class="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
+    <div class="flex items-center gap-0.5 bg-surface-container/60 p-0.5 rounded-lg border border-outline-variant/20">
+      <button onclick="window.history.back()" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Kembali"><i class="ph ph-arrow-left text-[18px]"></i></button>
+      <a href="index.html" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Beranda"><i class="ph ph-house text-[18px]"></i></a>
+    </div>
+    <a href="index.html" class="font-bold text-on-surface text-[17px] tracking-tight hover:opacity-80 flex items-center gap-2"><i class="ph ph-sparkle text-primary text-[20px]"></i><span class="hidden sm:inline">novelGENerator Studio</span></a>
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-moon text-[20px]"></i></button>
+    <a href="pengaturan.html" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-gear text-[20px]"></i></a>
+  </div>
+</header>
+<!-- Analytics Content -->
+<div class="p-8 max-w-6xl mx-auto space-y-8">
+<!-- Hero Metrics Glass Card -->
+<div class="glass-panel rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between shadow-sm relative overflow-hidden">
+<div class="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute -left-20 -bottom-20 w-64 h-64 bg-secondary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="z-10 flex-1">
+<h2 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-2">Overall Assessment</h2>
+<div class="flex items-baseline gap-4">
+<span class="font-display-lg text-[72px] leading-none font-bold text-primary">A</span>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-on-surface">Excellent</span>
+<span class="font-body-md text-body-md text-on-surface-variant">5% Teratas dari narasi yang dihasilkan.</span>
+</div>
+</div>
+</div>
+<div class="z-10 w-full md:w-auto mt-6 md:mt-0 flex gap-8 border-t md:border-t-0 md:border-l border-outline-variant/30 pt-6 md:pt-0 md:pl-8">
+<div class="flex flex-col items-center">
+<div class="relative w-24 h-24 flex items-center justify-center">
+<!-- Circular Progress Placeholder -->
+<svg class="w-full h-full transform -rotate-90" viewbox="0 0 36 36">
+<path class="text-surface-variant" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="100, 100" stroke-width="3"></path>
+<path class="text-primary" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-dasharray="92, 100" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<span class="absolute font-headline-sm text-headline-sm font-bold text-on-surface">92</span>
+</div>
+<span class="font-label-sm text-label-sm mt-2 text-on-surface-variant">Skor Total</span>
+</div>
+<div class="flex flex-col justify-center gap-3">
+<div class="flex items-center justify-between gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-20">Readability</span>
+<div class="w-32 h-1.5 bg-surface-variant rounded-full overflow-hidden"><div class="h-full bg-secondary w-[95%]"></div></div>
+</div>
+<div class="flex items-center justify-between gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-20">Pacing</span>
+<div class="w-32 h-1.5 bg-surface-variant rounded-full overflow-hidden"><div class="h-full bg-secondary w-[88%]"></div></div>
+</div>
+<div class="flex items-center justify-between gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant w-20">Vocabulary</span>
+<div class="w-32 h-1.5 bg-surface-variant rounded-full overflow-hidden"><div class="h-full bg-secondary w-[90%]"></div></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Detailed Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Radar Chart Area -->
+<div class="lg:col-span-1 glass-panel rounded-xl p-6 flex flex-col items-center justify-center min-h-[320px]">
+<h3 class="font-headline-sm text-headline-sm text-on-surface w-full text-left mb-6">Dimensional Analysis</h3>
+<!-- Decorative Radar Representation -->
+<div class="relative w-48 h-48">
+<svg class="w-full h-full opacity-80" viewbox="0 0 100 100">
+<!-- Web (Background) -->
+<polygon fill="none" points="50,5 95,25 95,75 50,95 5,75 5,25" stroke="#e2e2e3" stroke-width="1"></polygon>
+<polygon fill="none" points="50,20 80,35 80,65 50,80 20,65 20,35" stroke="#e2e2e3" stroke-width="1"></polygon>
+<polygon fill="none" points="50,35 65,45 65,55 50,65 35,55 35,45" stroke="#e2e2e3" stroke-width="1"></polygon>
+<!-- Axes -->
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="50" y1="50" y2="5"></line>
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="95" y1="50" y2="25"></line>
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="95" y1="50" y2="75"></line>
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="50" y1="50" y2="95"></line>
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="5" y1="50" y2="75"></line>
+<line stroke="#e2e2e3" stroke-width="1" x1="50" x2="5" y1="50" y2="25"></line>
+<!-- Data Polygon (Primary) -->
+<polygon fill="rgba(0, 112, 235, 0.2)" points="50,12 88,30 75,70 50,85 15,60 10,25" stroke="#0070eb" stroke-linejoin="round" stroke-width="1.5"></polygon>
+</svg>
+<!-- Labels -->
+<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-4 font-mono-sm text-mono-sm text-outline">Gaya</span>
+<span class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-4 font-mono-sm text-mono-sm text-outline">Kualitas</span>
+<span class="absolute top-1/2 -left-6 -translate-y-1/2 -rotate-90 font-mono-sm text-mono-sm text-outline">Orisinalitas</span>
+</div>
+</div>
+<!-- Feedback Accordions -->
+<div class="lg:col-span-2 space-y-4">
+<div class="glass-panel rounded-xl border border-outline-variant/30 overflow-hidden group">
+<button class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-surface-container/50 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">stylus</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Gaya Bahasa (Stylistics)</span>
+</div>
+<span class="material-symbols-outlined text-outline group-focus-within:rotate-180 transition-transform duration-200">expand_more</span>
+</button>
+<div class="px-6 pb-4 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20 bg-white/50">
+                            The narrative voice is consistent and engaging. Sentence structures are varied, preventing monotony. Recommended to increase metaphor usage in descriptive passages to elevate the prose further.
+                        </div>
+</div>
+<div class="glass-panel rounded-xl border border-outline-variant/30 overflow-hidden group">
+<button class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-surface-container/50 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">diamond</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Kualitas Plot (Plot Quality)</span>
+</div>
+<span class="material-symbols-outlined text-outline group-focus-within:rotate-180 transition-transform duration-200">expand_more</span>
+</button>
+<div class="px-6 pb-4 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20 bg-white/50 hidden group-focus-within:block">
+                            Pacing is generally strong, though the second act transition feels slightly rushed. Character arcs are well-defined.
+                        </div>
+</div>
+<div class="glass-panel rounded-xl border border-outline-variant/30 overflow-hidden group">
+<button class="w-full px-6 py-4 flex items-center justify-between text-left focus:outline-none hover:bg-surface-container/50 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">psychology</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Orisinalitas (Originality)</span>
+</div>
+<span class="material-symbols-outlined text-outline group-focus-within:rotate-180 transition-transform duration-200">expand_more</span>
+</button>
+<div class="px-6 pb-4 pt-2 font-body-md text-body-md text-on-surface-variant border-t border-outline-variant/20 bg-white/50 hidden group-focus-within:block">
+                            Skor orisinalitas tinggi terdeteksi. Konflik utama menghadirkan alur cerita unik.
+                        </div>
+</div>
+</div>
+</div>
+<!-- Actions Row -->
+<div class="flex justify-end pt-4">
+<button class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors mr-4 bg-white/50 backdrop-blur-sm">
+                    Export PDF
+                </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">compare_arrows</span>
+                    Bandingkan Novel
+                </button>
+</div>
+</div>
+</main>
+</body></html>

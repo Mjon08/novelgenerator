@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiru Gaya — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  .drop-zone { border: 2px dashed var(--color-outline-variant); border-radius: var(--radius-lg); padding: 36px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--color-surface-low); }
+  .drop-zone:hover { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+  .drop-zone .material-symbols-outlined { font-size: 40px; color: var(--color-primary); margin-bottom: 8px; display: block; }
+  .dna-helix { display: flex; gap: 10px; align-items: center; padding: 16px 0; flex-wrap: wrap; }
+  .dna-step { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .dna-dot { width: 14px; height: 14px; border-radius: 50%; opacity: 0.25; transition: all 0.3s; }
+  .dna-dot.active { opacity: 1; transform: scale(1.3); }
+  @keyframes dnaLightUp { 0%,100%{opacity:0.2;transform:scale(1)} 50%{opacity:1;transform:scale(1.35)} }
+  .dna-dot.d0 { background: var(--color-primary); animation: dnaLightUp 1.8s 0.0s infinite; }
+  .dna-dot.d1 { background: #3b82f6; animation: dnaLightUp 1.8s 0.3s infinite; }
+  .dna-dot.d2 { background: #10b981; animation: dnaLightUp 1.8s 0.6s infinite; }
+  .dna-dot.d3 { background: #f59e0b; animation: dnaLightUp 1.8s 0.9s infinite; }
+  .dna-dot.d4 { background: #ef4444; animation: dnaLightUp 1.8s 1.2s infinite; }
+  .dna-dot.d5 { background: #ec4899; animation: dnaLightUp 1.8s 1.5s infinite; }
+  .dna-dot-label { font-size: 0.7rem; color: var(--color-on-surface-variant); text-align: center; margin-top: 3px; }
+  .dna-card { background: var(--color-primary-fixed); border: 1px solid var(--color-primary-container); border-radius: var(--radius-lg); padding: 20px; margin-top: 16px; }
+  .dna-dim { border: 1px solid var(--color-outline-variant); border-radius: var(--radius); overflow: hidden; margin-bottom: 8px; }
+  .dna-dim-header { background: var(--color-surface-low); padding: 10px 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; font-weight: 600; }
+  .dna-dim-header:hover { background: var(--color-primary-fixed); }
+  .dna-dim-body { display: none; padding: 12px 14px; font-size: 0.82rem; line-height: 1.7; color: var(--color-on-surface-variant); }
+  .dna-dim-body.open { display: block; }
+  .dna-lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .dna-lib-card { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-soft); }
+  .dna-lib-card-title { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; color: var(--color-primary); margin-bottom: 6px; }
+  .dna-lib-card-meta { font-size: 0.78rem; color: var(--color-on-surface-variant); margin-bottom: 10px; }
+  .output-box { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); padding: 18px; white-space: pre-wrap; font-family: var(--font-serif); font-size: 0.92rem; line-height: 1.8; min-height: 200px; max-height: 50vh; overflow-y: auto; }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a href="index.html">Dashboard</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Tiru Gaya Penulis</span>
+      </div>
+      <h1 class="page-title">
+        <span class="material-symbols-outlined">psychology</span>
+        Tiru Gaya Penulis
+      </h1>
+      <p class="page-subtitle">Ekstrak DNA gaya penulisan dari novel manapun, lalu generate novel orisinal dengan gaya yang sama</p>
+    </div>
+
+    <div class="page-content">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-btn-ekstrak" onclick="switchTab('ekstrak', this)">
+          <span class="material-symbols-outlined">biotech</span> Ekstrak DNA
+        </button>
+        <button class="tab-btn" onclick="switchTab('dna-lib', this)">
+          <span class="material-symbols-outlined">library_books</span> DNA Tersimpan
+        </button>
+      </div>
+
+      <!-- Tab Ekstrak -->
+      <div id="tab-ekstrak" class="tab-panel active">
+        <div class="card mb-20">
+          <div class="card-header"><h2 class="card-title">Langkah 1 — Pilih Sumber Novel</h2></div>
+          <div class="card-body">
+            <div class="flex gap-8 mb-16" style="flex-wrap:wrap;">
+              <button class="btn btn-secondary" id="btn-src-upload" onclick="setSrc('upload')">
+                <span class="material-symbols-outlined">upload</span> Unggah Novel Baru
+              </button>
+              <button class="btn btn-secondary" id="btn-src-lib" onclick="setSrc('library')">
+                <span class="material-symbols-outlined">local_library</span> Dari Perpustakaan
+              </button>
+            </div>
+
+            <div id="src-upload" style="display:none;">
+              <div class="drop-zone" onclick="document.getElementById('mimic-file').click()">
+                <span class="material-symbols-outlined">biotech</span>
+                <p><strong>Lepas atau klik untuk upload novel</strong></p>
+                <p style="font-size:0.8rem; color:var(--color-on-surface-variant); margin-top:4px;">Mendukung .txt, .pdf, .docx — maks 50MB</p>
+              </div>
+              <input type="file" id="mimic-file" accept=".txt,.pdf,.docx" style="display:none;" onchange="onFileSelect(this)" />
+              <div id="mimic-filename" style="font-size:0.82rem; color:var(--color-on-surface-variant); margin-top:6px;"></div>
+              <div class="form-group mt-12">
+                <label class="form-label">Judul Novel (untuk profil DNA)</label>
+                <input class="form-input" id="mimic-title-upload" type="text" placeholder="cth. Ayat-Ayat Cinta" />
+              </div>
+            </div>
+
+            <div id="src-library" style="display:none;">
+              <div class="form-group">
+                <label class="form-label">Pilih dari Perpustakaan</label>
+                <select class="form-select" id="mimic-lib-select">
+                  <option value="">Memuat…</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="dna-progress" style="display:none; margin-top:16px;">
+              <div class="dna-helix">
+                <div class="dna-step" id="ds-language"><div class="dna-dot d0"></div><div class="dna-dot-label">Bahasa</div></div>
+                <div style="flex:1;height:2px;background:var(--color-outline-variant);margin-bottom:16px;"></div>
+                <div class="dna-step" id="ds-style"><div class="dna-dot d1"></div><div class="dna-dot-label">Gaya</div></div>
+                <div style="flex:1;height:2px;background:var(--color-outline-variant);margin-bottom:16px;"></div>
+                <div class="dna-step" id="ds-structure"><div class="dna-dot d2"></div><div class="dna-dot-label">Struktur</div></div>
+                <div style="flex:1;height:2px;background:var(--color-outline-variant);margin-bottom:16px;"></div>
+                <div class="dna-step" id="ds-character"><div class="dna-dot d3"></div><div class="dna-dot-label">Karakter</div></div>
+                <div style="flex:1;height:2px;background:var(--color-outline-variant);margin-bottom:16px;"></div>
+                <div class="dna-step" id="ds-human"><div class="dna-dot d4"></div><div class="dna-dot-label">Manusia</div></div>
+                <div style="flex:1;height:2px;background:var(--color-outline-variant);margin-bottom:16px;"></div>
+                <div class="dna-step" id="ds-thematic"><div class="dna-dot d5"></div><div class="dna-dot-label">Tema</div></div>
+              </div>
+              <div style="font-size:0.82rem; color:var(--color-on-surface-variant);" id="dna-progress-text">Mengekstrak DNA…</div>
+            </div>
+
+            <div class="flex gap-8 mt-16">
+              <button class="btn btn-primary" id="btn-extract" onclick="extractDNA()">
+                <span class="spinner" id="extract-spinner" style="display:none;"></span>
+                <span class="material-symbols-outlined">biotech</span>
+                Ekstrak DNA
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DNA Preview (hidden until extracted) -->
+        <div id="dna-result" style="display:none;">
+          <div class="dna-card" id="dna-card-inner"></div>
+
+          <!-- Step 2: Generate form -->
+          <div class="card mt-20">
+            <div class="card-header"><h2 class="card-title">Langkah 2 — Generate Novel Tiruan</h2></div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Judul Novel Baru *</label>
+                  <input class="form-input" id="mimic-new-title" type="text" placeholder="Judul orisinal yang kamu ciptakan" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Genre</label>
+                  <select class="form-select" id="mimic-genre">
+                    <option>Romance Kantoran (CEO/Boss)</option>
+                    <option>Romance Kampus</option>
+                    <option>Romance Islami (Halal)</option>
+                    <option>Horor Kuntilanak</option>
+                    <option>Thriller Misteri</option>
+                    <option>Fantasi Kerajaan Nusantara</option>
+                    <option>Teenlit SMA</option>
+                    <option>Slice of Life Indonesia</option>
+                    <option>Drama Keluarga</option>
+                  </select>
+                </div>
+                <div class="form-group" style="max-width:120px;">
+                  <label class="form-label">Jumlah Bab</label>
+                  <input class="form-input" id="mimic-bab" type="number" value="5" min="1" max="30" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Petunjuk Tema (opsional)</label>
+                <textarea class="form-textarea" id="mimic-tema" style="min-height:70px;" placeholder="cth. kisah tentang kesetiaan dan pengkhianatan di kota pelabuhan…"></textarea>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-label">
+                  Terapkan Sentuhan Manusia
+                  <small>Menambah ekspresi alami, variasi ritme, dan kebocoran emosi dari DNA</small>
+                </div>
+                <label class="toggle">
+                  <input type="checkbox" id="mimic-humanize" checked />
+                  <span class="toggle-track"></span>
+                </label>
+              </div>
+              <button class="btn btn-primary btn-lg" id="btn-gen-mimic" onclick="generateMimicNovel()">
+                <span class="spinner" id="gen-mimic-spinner" style="display:none;"></span>
+                <span class="material-symbols-outlined">auto_stories</span>
+                Hasilkan Novel Tiruan
+              </button>
+            </div>
+          </div>
+
+          <!-- Output -->
+          <div id="mimic-output" style="display:none; margin-top:20px;">
+            <div class="flex items-center justify-between mb-16">
+              <h3 id="mimic-out-title">Menghasilkan…</h3>
+              <span id="mimic-out-badge" class="badge badge-accent">
+                <span class="spinner" style="width:10px;height:10px;border-width:1.5px;"></span> Berjalan
+              </span>
+            </div>
+            <div class="progress-wrap mb-8"><div class="progress-bar" id="mimic-pbar"></div></div>
+            <div class="output-box" id="mimic-out-text"></div>
+            <div class="action-bar" id="mimic-action-bar" style="display:none;">
+              <span style="color:var(--success); font-size:0.88rem; display:flex; align-items:center; gap:4px;">
+                <span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Novel selesai!
+              </span>
+              <button class="btn btn-primary" onclick="openMimicInEditor()">
+                <span class="material-symbols-outlined">edit</span> Buka di Editor
+              </button>
+              <button class="btn btn-secondary" onclick="lihatMimicEval()">
+                <span class="material-symbols-outlined">analytics</span> Evaluasi
+              </button>
+              <button class="btn btn-secondary" onclick="ekspor()">
+                <span class="material-symbols-outlined">upload_file</span> Ekspor
+              </button>
+              <button class="btn btn-ghost" onclick="resetMimic()">
+                <span class="material-symbols-outlined">refresh</span> Ulangi
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab DNA Lib -->
+      <div id="tab-dna-lib" class="tab-panel">
+        <div id="dna-lib-grid" class="dna-lib-grid">
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.1rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.1rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- DNA Detail Modal -->
+<div class="modal-overlay" id="dna-detail-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2 id="dna-detail-title">Detail DNA</h2>
+      <button class="modal-close" onclick="closeModal('dna-detail-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body" id="dna-detail-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('dna-detail-modal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="del-dna-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Hapus DNA?</h2>
+      <button class="modal-close" onclick="closeModal('del-dna-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body"><p style="color:var(--color-on-surface-variant);">Profil DNA ini akan dihapus permanen.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('del-dna-modal')">Batal</button>
+      <button class="btn btn-danger" id="btn-del-dna-confirm">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('mimicry');
+
+  const params = new URLSearchParams(location.search);
+  const sourceId = params.get('source_id');
+
+  let currentDnaId = null;
+  let currentNovelId = null;
+  let srcMode = null;
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    if (tab === 'dna-lib') loadDNALib();
+  }
+
+  function setSrc(mode) {
+    srcMode = mode;
+    document.getElementById('src-upload').style.display = mode === 'upload' ? '' : 'none';
+    document.getElementById('src-library').style.display = mode === 'library' ? '' : 'none';
+    if (mode === 'library') loadLibraryOptions();
+  }
+
+  function onFileSelect(input) {
+    document.getElementById('mimic-filename').textContent = input.files[0] ? '📎 ' + input.files[0].name : '';
+  }
+
+  async function loadLibraryOptions() {
+    try {
+      const res = await fetch('/api/library');
+      const data = await res.json();
+      const sel = document.getElementById('mimic-lib-select');
+      if (!data || data.length === 0) {
+        sel.innerHTML = '<option value="">Perpustakaan kosong</option>';
+      } else {
+        sel.innerHTML = data.map(n => `<option value="${n.id}">${n.title}${n.author ? ' — '+n.author : ''}</option>`).join('');
+      }
+    } catch(err) { toast.error('Gagal memuat perpustakaan'); }
+  }
+
+  async function extractDNA() {
+    const btn = document.getElementById('btn-extract');
+    btn.disabled = true;
+    document.getElementById('extract-spinner').style.display = '';
+    document.getElementById('dna-progress').style.display = '';
+    document.getElementById('dna-result').style.display = 'none';
+
+    try {
+      let body = {};
+      if (srcMode === 'library') {
+        const sel = document.getElementById('mimic-lib-select');
+        if (!sel.value) throw new Error('Pilih novel dari perpustakaan');
+        body = { novel_id: sel.value };
+      } else {
+        const file = document.getElementById('mimic-file').files[0];
+        if (!file) throw new Error('Pilih file novel terlebih dahulu');
+        const judul = document.getElementById('mimic-title-upload').value.trim() || file.name.replace(/\.[^.]+$/, '');
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('title', judul);
+        document.getElementById('dna-progress-text').textContent = 'Mengunggah file…';
+
+        // First upload then analyze from uploaded
+        const upRes = await fetch('/api/library/upload', { method: 'POST', body: formData });
+        const upData = await upRes.json();
+        if (!upRes.ok) throw new Error(upData.error || 'Upload gagal');
+
+        // Wait for ingestion
+        await new Promise((resolve) => {
+          const es = new EventSource('/api/library/upload/progress/' + upData.novel_id);
+          es.addEventListener('done', () => { es.close(); resolve(); });
+          es.addEventListener('error', () => { es.close(); resolve(); });
+          setTimeout(() => { es.close(); resolve(); }, 90000);
+        });
+        body = { novel_id: upData.novel_id };
+      }
+
+      document.getElementById('dna-progress-text').textContent = 'Mengekstrak DNA gaya penulisan…';
+      const res = await fetch('/api/mimicry/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Ekstraksi gagal');
+      }
+
+      // Handle SSE stream from POST response
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let dnaData = null;
+      const dimOrder = ['language','style','structure','character','human_touch','thematic'];
+      const dimDotMap = { language:'language', style:'style', structure:'structure', character:'character', human_touch:'human', thematic:'thematic' };
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        let eventType = null;
+        for (const line of lines) {
+          if (line.startsWith('event: ')) { eventType = line.slice(7).trim(); }
+          if (line.startsWith('data: ') && eventType) {
+            try {
+              const d = JSON.parse(line.slice(6));
+              if (eventType === 'dna_dimension_done' && d.dimension) {
+                const dotId = dimDotMap[d.dimension] || d.dimension;
+                const dot = document.querySelector('#ds-' + dotId + ' .dna-dot');
+                if (dot) { dot.classList.add('active'); dot.style.animation = 'none'; dot.style.opacity = '1'; }
+                document.getElementById('dna-progress-text').textContent = 'Dimensi ' + d.dimension + ' selesai…';
+              }
+              if (eventType === 'dna_complete') { dnaData = d; }
+              if (eventType === 'dna_error') { throw new Error(d.message || 'DNA extraction error'); }
+            } catch(parseErr) { if (eventType === 'dna_error') throw parseErr; }
+            eventType = null;
+          }
+        }
+      }
+
+      if (!dnaData) throw new Error('DNA tidak lengkap — coba lagi');
+      currentDnaId = dnaData.dna_id;
+
+      // Mark all DNA steps done
+      Object.values(dimDotMap).forEach(dotId => {
+        const dot = document.querySelector('#ds-' + dotId + ' .dna-dot');
+        if (dot) { dot.classList.add('active'); dot.style.animation = 'none'; dot.style.opacity = '1'; }
+      });
+      document.getElementById('dna-progress-text').textContent = '✅ DNA berhasil diekstrak!';
+
+      // Fetch full DNA record for rendering
+      const dnaRes = await fetch('/api/mimicry/dna/' + currentDnaId);
+      const fullDna = await dnaRes.json();
+      renderDNACard(fullDna);
+      document.getElementById('dna-result').style.display = '';
+      toast.success('DNA gaya penulisan berhasil diekstrak');
+    } catch(err) {
+      toast.error('Gagal ekstrak DNA: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('extract-spinner').style.display = 'none';
+    }
+  }
+
+  function renderDNACard(data) {
+    // Support both raw JSON strings (from dna list) and parsed objects (from getDNAById)
+    const dims = [
+      { key: 'language_json', objKey: 'language', label: 'Dimensi Bahasa', icon: 'translate' },
+      { key: 'style_json', objKey: 'style', label: 'Dimensi Gaya', icon: 'edit_note' },
+      { key: 'structure_json', objKey: 'structure', label: 'Dimensi Struktur', icon: 'account_tree' },
+      { key: 'character_json', objKey: 'character', label: 'Dimensi Karakter', icon: 'person' },
+      { key: 'human_touch_json', objKey: 'human_touch', label: 'Sentuhan Manusia', icon: 'favorite' },
+      { key: 'thematic_json', objKey: 'thematic', label: 'Dimensi Tematik', icon: 'stars' },
+    ];
+
+    const wordCount = data.source_word_count || data.word_count;
+
+    const html = `
+      <div style="font-size:1rem; font-weight:600; color:var(--color-primary); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+        <span class="material-symbols-outlined">biotech</span>
+        DNA Novel: ${data.source_title || 'Tidak diketahui'}
+      </div>
+      <div style="font-size:0.78rem; color:var(--color-on-surface-variant); margin-bottom:14px;">
+        ${wordCount ? wordCount.toLocaleString('id-ID') + ' kata dianalisis' : ''}
+      </div>
+      ${dims.map((d) => {
+        let content = '';
+        try {
+          // Try parsed object first (getDNAById format), then raw JSON string (list format)
+          let j = data[d.objKey] || (data[d.key] ? (typeof data[d.key] === 'string' ? JSON.parse(data[d.key]) : data[d.key]) : null);
+          if (j && typeof j === 'object') {
+            content = Object.entries(j).slice(0, 6).map(([k,v]) => `
+              <div style="display:grid; grid-template-columns:140px 1fr; gap:4px 10px; margin-bottom:4px;">
+                <span style="font-size:0.73rem; text-transform:uppercase; color:var(--color-on-surface-variant);">${k}</span>
+                <span style="font-size:0.82rem;">${Array.isArray(v) ? v.join(', ') : String(v)}</span>
+              </div>
+            `).join('');
+          }
+        } catch(e) { content = '<span style="color:var(--color-on-surface-variant);">-</span>'; }
+        return `
+          <div class="dna-dim">
+            <div class="dna-dim-header" onclick="toggleDim(this)">
+              <span style="display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:16px;">${d.icon}</span>${d.label}</span>
+              <span class="material-symbols-outlined" style="font-size:16px;">expand_more</span>
+            </div>
+            <div class="dna-dim-body">${content || '<span style="color:var(--color-on-surface-variant);">Tidak tersedia</span>'}</div>
+          </div>
+        `;
+      }).join('')}
+    `;
+    document.getElementById('dna-card-inner').innerHTML = html;
+  }
+
+  function toggleDim(header) {
+    const body = header.nextElementSibling;
+    body.classList.toggle('open');
+  }
+
+  async function generateMimicNovel() {
+    const judul = document.getElementById('mimic-new-title').value.trim();
+    if (!judul) return toast.error('Judul novel wajib diisi');
+    if (!currentDnaId) return toast.error('Ekstrak DNA terlebih dahulu');
+
+    const btn = document.getElementById('btn-gen-mimic');
+    btn.disabled = true;
+    document.getElementById('gen-mimic-spinner').style.display = '';
+    document.getElementById('mimic-output').style.display = '';
+    document.getElementById('mimic-action-bar').style.display = 'none';
+    document.getElementById('mimic-out-text').textContent = '';
+    document.getElementById('mimic-pbar').style.width = '10%';
+
+    try {
+      const res = await fetch('/api/mimicry/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dna_id: currentDnaId,
+          title: judul,
+          genre: document.getElementById('mimic-genre').value,
+          chapters: parseInt(document.getElementById('mimic-bab').value) || 5,
+          theme_hint: document.getElementById('mimic-tema').value,
+          humanize: document.getElementById('mimic-humanize').checked,
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Gagal generate');
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      let pct = 10;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const d = JSON.parse(line.slice(6));
+              if (d.text) {
+                document.getElementById('mimic-out-text').textContent += d.text;
+                document.getElementById('mimic-out-text').scrollTop = 999999;
+                pct = Math.min(95, pct + 0.1);
+                document.getElementById('mimic-pbar').style.width = pct + '%';
+              }
+              if (d.novel_id) currentNovelId = d.novel_id;
+            } catch(e) {}
+          }
+          if (line.startsWith('event: selesai') || line.includes('"selesai"')) {
+            // done
+          }
+        }
+      }
+
+      document.getElementById('mimic-pbar').style.width = '100%';
+      document.getElementById('mimic-out-badge').textContent = '✅ Selesai';
+      document.getElementById('mimic-out-badge').className = 'badge badge-success';
+      document.getElementById('mimic-action-bar').style.display = 'flex';
+      toast.success('Novel tiruan berhasil dibuat!');
+    } catch(err) {
+      toast.error('Gagal generate: ' + err.message);
+      document.getElementById('mimic-out-badge').textContent = '❌ Gagal';
+      document.getElementById('mimic-out-badge').className = 'badge badge-error';
+    } finally {
+      btn.disabled = false;
+      document.getElementById('gen-mimic-spinner').style.display = 'none';
+    }
+  }
+
+  async function openMimicInEditor() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    try {
+      const res = await fetch('/api/editor/dokumen/baru', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ novel_id: currentNovelId, judul: document.getElementById('mimic-new-title').value || 'Novel Tiruan' })
+      });
+      const data = await res.json();
+      if (data.id) window.location.href = 'editor.html?id=' + data.id;
+      else toast.error(data.error || 'Gagal membuka editor');
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  function lihatMimicEval() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    window.location.href = 'evaluasi.html?novel_id=' + currentNovelId;
+  }
+
+  function ekspor() {
+    if (!currentNovelId) return toast.error('Novel ID tidak ditemukan');
+    window.location.href = 'ekspor.html?novel_id=' + currentNovelId;
+  }
+
+  function resetMimic() {
+    currentDnaId = null;
+    currentNovelId = null;
+    document.getElementById('dna-result').style.display = 'none';
+    document.getElementById('dna-progress').style.display = 'none';
+    document.getElementById('mimic-output').style.display = 'none';
+    document.getElementById('btn-extract').disabled = false;
+    document.getElementById('mimic-new-title').value = '';
+    document.getElementById('mimic-pbar').style.width = '0';
+  }
+
+  async function loadDNALib() {
+    try {
+      const res = await fetch('/api/mimicry/dna/list');
+      const data = await res.json();
+      const grid = document.getElementById('dna-lib-grid');
+      if (!data || data.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size:48px;">biotech</span></div>
+            <div class="empty-state-title">Belum ada profil DNA</div>
+            <div class="empty-state-desc">Ekstrak DNA dari novel untuk menyimpan profil gaya penulisan</div>
+            <button class="btn btn-primary empty-state-cta" onclick="switchTab('ekstrak', document.getElementById('tab-btn-ekstrak'))">
+              <span class="material-symbols-outlined">biotech</span> Mulai Ekstrak
+            </button>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = data.map(d => `
+        <div class="dna-lib-card">
+          <div class="dna-lib-card-title">${d.source_title}</div>
+          <div class="dna-lib-card-meta">${d.word_count ? d.word_count.toLocaleString('id-ID') + ' kata' : ''} · ${formatTgl(d.created_at)}</div>
+          <div class="flex gap-8" style="flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="useDNA(${d.id}, '${(d.source_title||'').replace(/'/g,'')}')">
+              <span class="material-symbols-outlined">rocket_launch</span> Generate Lagi
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="lihatDetailDNA(${d.id})">
+              <span class="material-symbols-outlined">analytics</span> Detail
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="confirmDelDNA(${d.id})">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    } catch(err) { toast.error('Gagal memuat daftar DNA'); }
+  }
+
+  async function lihatDetailDNA(id) {
+    openModal('dna-detail-modal');
+    document.getElementById('dna-detail-body').innerHTML = '<div class="skeleton skeleton-text w-80" style="height:1.5rem;"></div>';
+    try {
+      const res = await fetch('/api/mimicry/dna/' + id);
+      const data = await res.json();
+      document.getElementById('dna-detail-title').textContent = 'DNA: ' + (data.source_title || 'Tidak diketahui');
+      renderDNACard(data);
+      document.getElementById('dna-detail-body').innerHTML = document.getElementById('dna-card-inner').innerHTML;
+    } catch(err) {
+      document.getElementById('dna-detail-body').innerHTML = '<p style="color:var(--color-error);">Gagal memuat detail</p>';
+    }
+  }
+
+  function useDNA(id, title) {
+    currentDnaId = id;
+    document.getElementById('tab-btn-ekstrak').click();
+    document.getElementById('dna-result').style.display = '';
+    document.getElementById('dna-card-inner').innerHTML = `<div style="color:var(--color-primary); font-weight:600; display:flex; align-items:center; gap:6px;"><span class="material-symbols-outlined">biotech</span>DNA dari: ${title}</div>`;
+    document.getElementById('mimic-new-title').focus();
+    toast.info('DNA ' + title + ' siap digunakan');
+  }
+
+  function confirmDelDNA(id) {
+    document.getElementById('btn-del-dna-confirm').onclick = async () => {
+      try {
+        await fetch('/api/mimicry/dna/' + id, { method: 'DELETE' });
+        toast.success('DNA dihapus');
+        closeModal('del-dna-modal');
+        loadDNALib();
+      } catch(err) { toast.error('Gagal menghapus'); }
+    };
+    openModal('del-dna-modal');
+  }
+
+  function formatTgl(dt) {
+    if (!dt) return '';
+    return new Date(dt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  // Auto-trigger if source_id in URL
+  if (sourceId) {
+    setSrc('library');
+    loadLibraryOptions().then(() => {
+      const sel = document.getElementById('mimic-lib-select');
+      sel.value = sourceId;
+    });
+  }
+</script>
+</body>
+</html>

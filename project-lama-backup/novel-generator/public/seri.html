@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Manajemen Seri - novelGENerator Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&amp;family=JetBrains+Mono:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#1a1c1d",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1a1c1d",
+                        "surface-tint": "#005bc1",
+                        "surface-container-high": "#e8e8e9",
+                        "tertiary": "#9e3d00",
+                        "outline-variant": "#c1c6d7",
+                        "on-primary-fixed": "#001a41",
+                        "on-surface-variant": "#414755",
+                        "primary-container": "#0070eb",
+                        "secondary-fixed-dim": "#c2c1ff",
+                        "surface-variant": "#e2e2e3",
+                        "surface-dim": "#dadadb",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#0c006b",
+                        "inverse-on-surface": "#f0f1f2",
+                        "error": "#ba1a1a",
+                        "primary": "#0058bc",
+                        "on-secondary-container": "#fffbff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-low": "#f3f3f4",
+                        "surface-container-highest": "#e2e2e3",
+                        "on-tertiary-fixed": "#351000",
+                        "on-secondary-fixed-variant": "#332dbc",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#004493",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#2f3132",
+                        "surface-bright": "#f9f9fa",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "background": "#f9f9fa",
+                        "inverse-primary": "#adc6ff",
+                        "secondary": "#4a47d2",
+                        "secondary-container": "#6462ec",
+                        "surface-container": "#eeeeef",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#ffb595",
+                        "secondary-fixed": "#e2dfff",
+                        "on-primary-container": "#fefcff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "tertiary-container": "#c64f00",
+                        "outline": "#717786",
+                        "primary-fixed": "#d8e2ff",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f9f9fa"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "toolbar-height": "52px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "sidebar-width": "260px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Plus Jakarta Sans"],
+                        "mono-sm": ["JetBrains Mono"],
+                        "body-lg": ["\"Source Serif 4\""],
+                        "headline-sm": ["Plus Jakarta Sans"],
+                        "body-md": ["\"Source Serif 4\""],
+                        "headline-md": ["Plus Jakarta Sans"],
+                        "label-sm": ["Plus Jakarta Sans"],
+                        "label-md": ["Plus Jakarta Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["34px", { "lineHeight": "41px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "mono-sm": ["12px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "32px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "25px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f6f6f7; }
+        .glass-panel {
+            background-color: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(229, 229, 234, 0.5);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+        }
+        .apple-segmented {
+            background-color: #e3e3e8;
+            border-radius: 8px;
+            padding: 2px;
+            display: inline-flex;
+        }
+        .apple-segment {
+            padding: 4px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #4a4a4d;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .apple-segment.active {
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            color: #000;
+        }
+        .squircle {
+            border-radius: 12px;
+        }
+        
+        /* Mac Window Controls */
+        .mac-controls {
+            display: flex;
+            gap: 8px;
+            padding-left: 16px;
+        }
+        .mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .mac-close { background-color: #ff5f56; }
+        .mac-min { background-color: #ffbd2e; }
+        .mac-max { background-color: #27c93f; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d1d1d6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aeb1b6;
+        }
+    </style>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="shared/nav.js"></script>
+<style id="dark-mode-style">
+  html.dark { color-scheme: dark; }
+  /* .glass-panel dipakai untuk efek kartu glassmorphism di halaman ini, tapi
+     nilai rgba-nya hardcode putih transparan — tanpa baris ini kartu tetap
+     terang di mode gelap walau teks di dalamnya sudah dipaksa putih. */
+  html.dark .glass-panel { background: rgba(47, 49, 50, 0.85) !important; }
+  html.dark body { background-color: #0f0f12 !important; color: #f3f3f6 !important; }
+  html.dark header, html.dark aside { background-color: rgba(24,24,28,0.95) !important; border-color: rgba(255,255,255,0.1) !important; }
+  /* Kelas latar "surface" Tailwind (bg-surface, bg-surface/NN, bg-surface-container*,
+     bg-surface-variant, bg-surface-bright) memakai warna literal terang dari
+     tailwind.config, bukan CSS variable yang otomatis berubah saat mode gelap.
+     Sebelumnya hanya sebagian nama kelas didaftar manual, jadi varian dengan
+     modifier opacity (mis. bg-surface/60) lolos tidak ter-override dan kartu
+     tetap terang dengan teks putih di atasnya — nyaris tak terbaca. Selector
+     wildcard [class*="..."] menangkap SEMUA varian sekaligus. */
+  html.dark [class*="bg-surface"], html.dark [class*="bg-white"] { background-color: #1c1c22 !important; }
+  html.dark [class*="bg-surface-container-high"] { background-color: #26262e !important; }
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6, html.dark .text-on-surface { color: #fff !important; }
+  html.dark p, html.dark span, html.dark label, html.dark li, html.dark a:not(.bg-primary) { color: #c8c8d0 !important; }
+  html.dark .text-outline, html.dark .text-on-surface-variant { color: #9898a6 !important; }
+  html.dark .border, html.dark .border-b, html.dark [class*="border-outline"] { border-color: rgba(255,255,255,0.1) !important; }
+  html.dark input, html.dark textarea, html.dark select { background-color: #1e1e24 !important; color: #f3f3f6 !important; border-color: rgba(255,255,255,0.15) !important; }
+</style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-[#f6f6f7] min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 right-0 h-[52px] bg-white/90 dark:bg-[#18181c]/90 backdrop-blur-md border-b border-outline-variant/20 flex items-center justify-between px-4 z-40">
+  <div class="flex items-center gap-3">
+    <button onclick="toggleSidebar()" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" title="Buka/Tutup Sidebar"><i class="ph ph-sidebar-simple text-[22px]"></i></button>
+    <div class="hidden sm:flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div class="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
+    <div class="flex items-center gap-0.5 bg-surface-container/60 p-0.5 rounded-lg border border-outline-variant/20">
+      <button onclick="window.history.back()" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Kembali"><i class="ph ph-arrow-left text-[18px]"></i></button>
+      <a href="index.html" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Beranda"><i class="ph ph-house text-[18px]"></i></a>
+    </div>
+    <a href="index.html" class="font-bold text-on-surface text-[17px] tracking-tight hover:opacity-80 flex items-center gap-2"><i class="ph ph-sparkle text-primary text-[20px]"></i><span class="hidden sm:inline">novelGENerator Studio</span></a>
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-moon text-[20px]"></i></button>
+    <a href="pengaturan.html" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-gear text-[20px]"></i></a>
+  </div>
+</header>
+<div class="flex flex-1 pt-[52px]">
+<!-- SideNavBar -->
+<!-- SideNavBar (Collapsible Sidebar Drawer) -->
+<aside id="app-sidebar" class="w-[260px] h-[calc(100vh-68px)] fixed left-4 top-[60px] rounded-xl bg-white/95 dark:bg-[#18181c]/95 backdrop-blur-xl border border-outline-variant/30 z-40 p-4 flex flex-col justify-between shadow-xl transition-all duration-300 -translate-x-[300px]">
+  <div class="flex flex-col gap-1 overflow-y-auto">
+    <div class="mb-3 px-2 flex justify-between items-center"><p class="text-[11px] text-outline uppercase tracking-wider font-semibold">Studio AI</p><button onclick="toggleSidebar()" class="p-1 rounded text-outline hover:text-on-surface"><i class="ph ph-x text-[18px]"></i></button></div>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="index.html"><i class="ph ph-squares-four text-[20px]"></i> Dasbor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="generate.html"><i class="ph ph-magic-wand text-[20px]"></i> Buat Novel</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="editor.html"><i class="ph ph-pen-nib text-[20px]"></i> Editor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="tulis.html"><i class="ph ph-article text-[20px]"></i> Tulis Dokumen</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors !text-primary !bg-primary/10 font-semibold" href="seri.html"><i class="ph ph-books text-[20px]"></i> Seri & Jilid</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="mimicry.html"><i class="ph ph-brain text-[20px]"></i> Tiru Gaya (DNA)</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="library.html"><i class="ph ph-book-bookmark text-[20px]"></i> Perpustakaan</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="evaluasi.html"><i class="ph ph-chart-line-up text-[20px]"></i> Evaluasi Kualitas</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="ekspor.html"><i class="ph ph-export text-[20px]"></i> Ekspor Karya</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="pengaturan.html"><i class="ph ph-gear text-[20px]"></i> Pengaturan</a>
+  </div>
+  <div class="pt-3 border-t border-outline-variant/20 flex flex-col gap-2">
+    <button onclick="toggleTheme()" class="theme-toggle-btn w-full bg-surface-container text-on-surface hover:bg-surface-variant p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-moon text-[18px]"></i><span>Ganti Mode</span></button>
+    <a href="generate.html" class="w-full bg-primary text-on-primary rounded-lg py-2.5 font-label-md text-label-md flex justify-center items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"><i class="ph ph-plus text-[18px]"></i>Buat Novel Baru</a>
+    <button onclick="logoutApp()" class="w-full bg-transparent text-on-surface-variant hover:bg-surface-container p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-sign-out text-[18px]"></i><span>Keluar</span></button>
+  </div>
+</aside>
+<!-- Main Content Area (Split View) -->
+<!-- Split view: daftar seri di kiri, detail di kanan. Menumpuk di layar sempit. -->
+<main class="pt-[68px] px-4 sm:px-6 lg:px-8 pb-24 min-h-screen transition-all duration-300 w-full box-border overflow-x-hidden flex flex-col lg:flex-row gap-4 items-stretch">
+<!-- Left Pane: Series List (Finder Style) -->
+<div class="w-full lg:w-[320px] glass-panel rounded-2xl flex flex-col overflow-hidden shrink-0 min-h-[200px]">
+<div class="p-4 border-b border-surface-variant bg-white/50 backdrop-blur-sm flex justify-between items-center sticky top-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Seri Saya</h2>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors text-primary">
+<span class="material-symbols-outlined text-[20px]">add</span>
+</button>
+</div>
+<div class="p-2 flex-1 overflow-y-auto">
+<!-- Diisi dari /api/seri/daftar saat halaman dimuat -->
+<div id="seri-list"></div>
+</div>
+</div>
+<!-- Panel detail: diisi saat sebuah seri dipilih -->
+<div id="seri-detail" class="flex-1 bg-white border border-surface-variant rounded-2xl shadow-sm flex flex-col overflow-hidden relative min-h-[320px]"></div>
+</main>
+</div>
+<script>
+// ══════════════════════════════════════════════════════════
+// SERI — daftar & detail dari server
+// ══════════════════════════════════════════════════════════
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+let daftarSeri = [];
+let seriTerpilih = null;
+
+function kartuSeri(s, aktif) {
+  const inisial = escapeHtml((s.judul || '?').trim().charAt(0).toUpperCase());
+  const jumlahJilid = s.jumlah_jilid ?? s.jilid_count ?? 0;
+  const meta = [s.genre, `${jumlahJilid} Jilid`].filter(Boolean).map(escapeHtml).join(' • ');
+
+  return `
+    <div onclick="pilihSeri(${s.id})"
+         class="flex items-center gap-3 p-3 rounded-xl cursor-pointer mb-1 transition-colors ${
+           aktif ? 'bg-primary/10 border border-primary/20' : 'hover:bg-surface-variant/50'}">
+      <div class="w-12 h-16 rounded-md overflow-hidden shrink-0 shadow-sm bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+        <span class="font-headline-sm text-primary/60">${inisial}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <h3 class="font-label-md text-label-md text-on-surface truncate ${aktif ? 'font-semibold' : ''}">${escapeHtml(s.judul || 'Tanpa Judul')}</h3>
+        <p class="font-mono-sm text-mono-sm text-on-surface-variant truncate">${meta}</p>
+      </div>
+    </div>`;
+}
+
+function tampilDetailKosong(pesan) {
+  document.getElementById('seri-detail').innerHTML = `
+    <div class="flex-1 flex flex-col items-center justify-center text-center p-10">
+      <span class="material-symbols-outlined text-[44px] text-outline-variant mb-3">auto_stories</span>
+      <h3 class="font-headline-sm text-headline-sm text-on-surface mb-1">${escapeHtml(pesan)}</h3>
+      <p class="font-body-md text-body-md text-on-surface-variant max-w-sm">
+        Seri membantu mengelompokkan beberapa jilid novel dalam satu alur cerita berkelanjutan.
+      </p>
+    </div>`;
+}
+
+function pilihSeri(id) {
+  seriTerpilih = id;
+  renderDaftarSeri();
+
+  const s = daftarSeri.find(x => x.id === id);
+  if (!s) return tampilDetailKosong('Seri tidak ditemukan');
+
+  const jumlahJilid = s.jumlah_jilid ?? s.jilid_count ?? 0;
+  document.getElementById('seri-detail').innerHTML = `
+    <div class="px-8 py-6 border-b border-surface-variant flex justify-between items-start bg-surface-bright/50">
+      <div class="flex gap-6">
+        <div class="w-32 h-44 rounded-lg shadow-md overflow-hidden border border-outline-variant/20 shrink-0 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+          <span class="font-display-lg text-[40px] text-primary/60">${escapeHtml((s.judul || '?').charAt(0).toUpperCase())}</span>
+        </div>
+        <div class="flex flex-col justify-end py-2">
+          <div class="inline-flex items-center gap-2 mb-2">
+            ${s.genre ? `<span class="px-2 py-1 rounded bg-secondary-fixed/50 text-on-secondary-fixed text-[11px] font-bold uppercase tracking-wider">${escapeHtml(s.genre)}</span>` : ''}
+            ${s.status ? `<span class="px-2 py-1 rounded bg-surface-variant text-on-surface-variant text-[11px] font-bold uppercase tracking-wider">${escapeHtml(s.status)}</span>` : ''}
+          </div>
+          <h1 class="font-display-lg text-[32px] font-bold text-on-surface mb-1">${escapeHtml(s.judul || 'Tanpa Judul')}</h1>
+          <p class="font-body-md text-body-md text-on-surface-variant mb-4 max-w-xl">${escapeHtml(s.sinopsis || s.deskripsi || 'Belum ada sinopsis untuk seri ini.')}</p>
+          <p class="font-mono-sm text-mono-sm text-on-surface-variant">${jumlahJilid} jilid</p>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 overflow-y-auto p-8 bg-surface-container-lowest">
+      <p class="font-body-md text-body-md text-on-surface-variant text-center">
+        ${jumlahJilid === 0 ? 'Belum ada jilid pada seri ini.' : `Seri ini memiliki ${jumlahJilid} jilid.`}
+      </p>
+    </div>`;
+}
+
+function renderDaftarSeri() {
+  const el = document.getElementById('seri-list');
+  if (!el) return;
+
+  if (daftarSeri.length === 0) {
+    el.innerHTML = `
+      <div class="p-6 text-center">
+        <p class="font-label-sm text-label-sm text-on-surface-variant mb-3">Belum ada seri.</p>
+        <a href="generate.html" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-[16px]">add</span> Buat Seri
+        </a>
+      </div>`;
+    return;
+  }
+  el.innerHTML = daftarSeri.map(s => kartuSeri(s, s.id === seriTerpilih)).join('');
+}
+
+async function muatSeri() {
+  try {
+    const data = await (await fetch('/api/seri/daftar')).json();
+    daftarSeri = Array.isArray(data) ? data : (data.seri || data.daftar || []);
+    renderDaftarSeri();
+
+    if (daftarSeri.length === 0) {
+      tampilDetailKosong('Belum ada seri');
+    } else {
+      pilihSeri(daftarSeri[0].id);
+    }
+  } catch (err) {
+    console.error('Gagal memuat seri:', err);
+    renderDaftarSeri();
+    tampilDetailKosong('Gagal memuat seri');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', muatSeri);
+</script>
+</body></html>

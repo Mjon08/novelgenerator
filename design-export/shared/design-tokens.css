@@ -1,0 +1,98 @@
+/* ═══════════════════════════════════════════════════════════
+   novelGENerator — Design Tokens (Pastel Literary Minimalist)
+   Referensi: Google Stitch "Pastel Literary Minimalist"
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Surface & Background ─────────────────────────────── */
+  --color-bg:                  #f9f9ff;
+  --color-surface:             #f9f9ff;
+  --color-surface-bright:      #f9f9ff;
+  --color-surface-lowest:      #ffffff;
+  --color-surface-low:         #f0f3ff;
+  --color-surface-container:   #e7eeff;
+  --color-surface-high:        #dee8ff;
+  --color-surface-highest:     #d8e3fa;
+  --color-surface-dim:         #cfdaf1;
+  --color-surface-variant:     #d8e3fa;
+
+  /* ── On-Surface ──────────────────────────────────────── */
+  --color-on-surface:          #111c2c;
+  --color-on-surface-variant:  #404847;
+  --color-inverse-surface:     #263142;
+  --color-inverse-on-surface:  #ebf1ff;
+
+  /* ── Primary (Teal) ──────────────────────────────────── */
+  --color-primary:             #3b6662;
+  --color-on-primary:          #ffffff;
+  --color-primary-container:   #8ebab5;
+  --color-on-primary-container:#1f4b47;
+  --color-primary-fixed:       #beebe6;
+  --color-primary-fixed-dim:   #a3cfca;
+  --color-on-primary-fixed:    #00201e;
+  --color-primary-fixed-var:   #224e4a;
+  --color-inverse-primary:     #a3cfca;
+
+  /* ── Secondary ───────────────────────────────────────── */
+  --color-secondary:           #585f64;
+  --color-on-secondary:        #ffffff;
+  --color-secondary-container: #dae1e6;
+  --color-on-secondary-container: #5c6468;
+  --color-secondary-fixed:     #dce3e8;
+  --color-secondary-fixed-dim: #c0c7cc;
+  --color-on-secondary-fixed:  #161d20;
+  --color-on-secondary-fixed-v:#41484c;
+
+  /* ── Tertiary (Sage) ─────────────────────────────────── */
+  --color-tertiary:            #58605a;
+  --color-on-tertiary:         #ffffff;
+  --color-tertiary-container:  #acb4ad;
+  --color-on-tertiary-container:#3e4641;
+  --color-tertiary-fixed:      #dde5dd;
+  --color-tertiary-fixed-dim:  #c0c9c1;
+  --color-on-tertiary-fixed:   #161d19;
+  --color-on-tertiary-fixed-v: #414943;
+
+  /* ── Outline ─────────────────────────────────────────── */
+  --color-outline:             #717977;
+  --color-outline-variant:     #c0c8c6;
+
+  /* ── Error ───────────────────────────────────────────── */
+  --color-error:               #ba1a1a;
+  --color-on-error:            #ffffff;
+  --color-error-container:     #ffdad6;
+  --color-on-error-container:  #93000a;
+
+  /* ── Semantic Aliases (kompatibilitas dengan kode lama) ─ */
+  --bg:           var(--color-bg);
+  --surface:      var(--color-surface-lowest);
+  --surface2:     var(--color-surface-low);
+  --accent:       var(--color-primary);
+  --accent2:      var(--color-primary-container);
+  --text:         var(--color-on-surface);
+  --text-muted:   var(--color-on-surface-variant);
+  --border:       var(--color-outline-variant);
+  --success:      #2d6a4f;
+  --error:        var(--color-error);
+  --warning:      #b45309;
+  --info:         #1d4ed8;
+
+  /* ── Typography ──────────────────────────────────────── */
+  --font-serif:   'Source Serif 4', Georgia, serif;
+  --font-sans:    'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Courier New', monospace;
+
+  /* ── Sizing ──────────────────────────────────────────── */
+  --sidebar-width:           240px;
+  --sidebar-collapsed-width: 60px;
+  --radius-sm:    0.25rem;
+  --radius:       0.5rem;
+  --radius-md:    0.75rem;
+  --radius-lg:    1rem;
+  --radius-xl:    1.5rem;
+  --radius-full:  9999px;
+
+  /* ── Shadow ──────────────────────────────────────────── */
+  --shadow-soft:  0 4px 12px rgba(17, 28, 44, 0.05);
+  --shadow-md:    0 8px 24px rgba(17, 28, 44, 0.08);
+}

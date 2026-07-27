@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perpustakaan — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .lib-card { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-soft); transition: box-shadow 0.2s, transform 0.2s; }
+  .lib-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .lib-card-cover { height: 80px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--color-surface-container), var(--color-surface-high)); }
+  .lib-card-cover .material-symbols-outlined { font-size: 40px; color: var(--color-primary); }
+  .lib-card-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .lib-card-title { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; color: var(--color-on-surface); }
+  .lib-card-meta { font-size: 0.78rem; color: var(--color-on-surface-variant); }
+  .lib-card-footer { padding: 10px 14px; border-top: 1px solid var(--color-outline-variant); display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-full); padding: 2px 8px; font-size: 0.72rem; color: var(--color-on-surface-variant); }
+  .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .search-wrap { position: relative; flex: 1; max-width: 300px; }
+  .search-wrap .material-symbols-outlined { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--color-on-surface-variant); font-size: 18px; }
+  .search-wrap input { padding-left: 36px; }
+  .novel-card-toggle { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--color-outline-variant); margin-top: 8px; }
+  .novel-card-toggle span { font-size: 0.78rem; color: var(--color-on-surface-variant); flex: 1; }
+  .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .profile-field { background: var(--color-surface-low); border-radius: var(--radius); padding: 10px 12px; }
+  .profile-field-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-on-surface-variant); margin-bottom: 4px; font-weight: 600; }
+  .profile-sample { background: var(--color-surface-low); border-left: 3px solid var(--color-primary); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; font-style: italic; font-family: var(--font-serif); font-size: 0.88rem; line-height: 1.7; color: var(--color-on-surface-variant); margin-top: 10px; }
+  .drop-zone { border: 2px dashed var(--color-outline-variant); border-radius: var(--radius-lg); padding: 30px 20px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--color-surface-low); }
+  .drop-zone:hover { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+  .drop-zone .material-symbols-outlined { font-size: 40px; color: var(--color-primary); margin-bottom: 8px; display: block; }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+
+    <div class="page-header">
+      <div class="breadcrumb">
+        <a href="index.html">Dashboard</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>Perpustakaan</span>
+      </div>
+      <h1 class="page-title">
+        <span class="material-symbols-outlined">local_library</span>
+        Perpustakaan
+      </h1>
+    </div>
+
+    <div class="page-content">
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab('novel-saya', this)">
+          <span class="material-symbols-outlined">book</span> Novel Saya
+        </button>
+        <button class="tab-btn" onclick="switchTab('referensi', this)">
+          <span class="material-symbols-outlined">science</span> Referensi Gaya (RAG)
+        </button>
+      </div>
+
+      <!-- Tab Novel Saya -->
+      <div id="tab-novel-saya" class="tab-panel active">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <span class="material-symbols-outlined">search</span>
+            <input class="form-input" type="text" id="novel-search" placeholder="Cari novel…" oninput="filterNovels()" />
+          </div>
+          <select class="form-select" id="novel-filter" onchange="filterNovels()" style="width:auto;">
+            <option value="semua">Semua</option>
+            <option value="dievaluasi">Sudah Dievaluasi</option>
+            <option value="belum">Belum Dievaluasi</option>
+          </select>
+        </div>
+        <div id="novel-grid" class="lib-grid">
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+        </div>
+      </div>
+
+      <!-- Tab Referensi Gaya -->
+      <div id="tab-referensi" class="tab-panel">
+        <div class="section-header mb-16">
+          <div></div>
+          <button class="btn btn-primary" onclick="openUploadModal()">
+            <span class="material-symbols-outlined">upload</span>
+            Upload Novel Referensi
+          </button>
+        </div>
+        <div id="ref-grid" class="lib-grid">
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal-overlay" id="upload-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>
+        <span class="material-symbols-outlined">upload</span>
+        Upload Novel Referensi
+      </h2>
+      <button class="modal-close" onclick="closeModal('upload-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Judul Novel *</label>
+        <input class="form-input" id="up-judul" type="text" placeholder="cth. Ayat-Ayat Cinta" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pengarang</label>
+        <input class="form-input" id="up-author" type="text" placeholder="Nama pengarang" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">File Novel</label>
+        <div class="drop-zone" onclick="document.getElementById('up-file').click()">
+          <span class="material-symbols-outlined">description</span>
+          <p><strong>Klik untuk pilih file</strong></p>
+          <p style="font-size:0.8rem; color:var(--color-on-surface-variant); margin-top:4px;">Mendukung .txt, .pdf, .docx — maks 50MB</p>
+        </div>
+        <input type="file" id="up-file" accept=".txt,.pdf,.docx" style="display:none;" onchange="showFileName(this)" />
+        <div id="up-filename" style="font-size:0.82rem; color:var(--color-on-surface-variant); margin-top:6px;"></div>
+      </div>
+      <div id="up-progress" style="display:none;">
+        <div class="progress-wrap mb-8"><div class="progress-bar" id="up-bar"></div></div>
+        <div style="font-size:0.82rem; color:var(--color-on-surface-variant);" id="up-status">Mengunggah…</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('upload-modal')">Batal</button>
+      <button class="btn btn-primary" id="btn-upload" onclick="doUpload()">
+        <span class="material-symbols-outlined">upload</span>
+        Upload & Analisis
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Profile Modal -->
+<div class="modal-overlay" id="profile-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2 id="profile-modal-title">Profil Gaya</h2>
+      <button class="modal-close" onclick="closeModal('profile-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body" id="profile-modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('profile-modal')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>Hapus Novel?</h2>
+      <button class="modal-close" onclick="closeModal('delete-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body"><p style="color:var(--color-on-surface-variant);" id="delete-confirm-text">Aksi ini tidak bisa dibatalkan.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Batal</button>
+      <button class="btn btn-danger" id="btn-confirm-delete">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('library');
+
+  let allNovels = [];
+  let allLibrary = [];
+
+  // Modal helpers
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+  function switchTab(tab, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    if (tab === 'referensi' && allLibrary.length === 0) loadLibrary();
+  }
+
+  // Load novels (dokumen_editor)
+  async function loadNovels() {
+    try {
+      const res = await fetch('/api/editor/dokumen/daftar');
+      const data = await res.json();
+      allNovels = Array.isArray(data) ? data : [];
+      renderNovels(allNovels);
+    } catch(err) {
+      toast.error('Gagal memuat daftar novel');
+    }
+  }
+
+  function renderNovels(list) {
+    const grid = document.getElementById('novel-grid');
+    if (!list || list.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1;">
+          <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size:48px;">edit_note</span></div>
+          <div class="empty-state-title">Belum ada novel</div>
+          <div class="empty-state-desc">Buat novel pertama kamu dengan AI</div>
+          <a href="generate.html" class="btn btn-primary empty-state-cta">
+            <span class="material-symbols-outlined">add</span> Buat Novel
+          </a>
+        </div>
+      `;
+      return;
+    }
+    grid.innerHTML = list.map(n => `
+      <div class="lib-card">
+        <div class="lib-card-cover"><span class="material-symbols-outlined">${getGenreIcon(n.judul)}</span></div>
+        <div class="lib-card-body">
+          <div class="lib-card-title">${n.judul || 'Tanpa Judul'}</div>
+          <div class="lib-card-meta">${n.jumlah_kata || 0} kata · ${n.jumlah_bab || 0} bab · ${formatTgl(n.terakhir_diedit)}</div>
+          <div class="novel-card-toggle">
+            <span>Jadikan Referensi RAG</span>
+            <label class="toggle" style="width:36px;height:20px;" title="Toggle referensi RAG">
+              <input type="checkbox" ${n.is_in_library ? 'checked' : ''} onchange="toggleLib(${n.novel_id || n.id}, this)" />
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+        <div class="lib-card-footer">
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='editor.html?id=${n.id}'">
+            <span class="material-symbols-outlined">edit</span> Editor
+          </button>
+          ${n.novel_id ? `<button class="btn btn-secondary btn-sm" onclick="window.location.href='evaluasi.html?novel_id=${n.novel_id}'"><span class="material-symbols-outlined">analytics</span></button>` : ''}
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='ekspor.html?dok_id=${n.id}'">
+            <span class="material-symbols-outlined">upload_file</span>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete(${n.id}, '${(n.judul||'').replace(/'/g,'')}', 'novel')">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function filterNovels() {
+    const q = document.getElementById('novel-search').value.toLowerCase();
+    const f = document.getElementById('novel-filter').value;
+    let list = allNovels.filter(n => !q || (n.judul||'').toLowerCase().includes(q));
+    renderNovels(list);
+  }
+
+  // Load RAG library
+  async function loadLibrary() {
+    try {
+      const res = await fetch('/api/library');
+      const data = await res.json();
+      allLibrary = data || [];
+      renderLibrary(allLibrary);
+    } catch(err) {
+      toast.error('Gagal memuat perpustakaan referensi');
+    }
+  }
+
+  function renderLibrary(list) {
+    const grid = document.getElementById('ref-grid');
+    if (!list || list.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1;">
+          <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size:48px;">science</span></div>
+          <div class="empty-state-title">Belum ada referensi</div>
+          <div class="empty-state-desc">Upload novel untuk digunakan sebagai referensi gaya penulisan AI</div>
+          <button class="btn btn-primary empty-state-cta" onclick="openUploadModal()">
+            <span class="material-symbols-outlined">upload</span> Upload Sekarang
+          </button>
+        </div>
+      `;
+      return;
+    }
+    grid.innerHTML = list.map(n => `
+      <div class="lib-card">
+        <div class="lib-card-cover"><span class="material-symbols-outlined">${getGenreIcon(n.title)}</span></div>
+        <div class="lib-card-body">
+          <div class="lib-card-title">${n.title}</div>
+          <div class="lib-card-meta">${n.author || 'Pengarang tidak diketahui'} ${n.year ? '· '+n.year : ''}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+            ${(n.genre_tags||'').split(',').filter(t=>t.trim()).map(t=>`<span class="tag">${t.trim()}</span>`).join('')}
+            <span class="badge ${n.status==='ready'?'badge-success':'badge-warning'}">${n.status}</span>
+          </div>
+        </div>
+        <div class="lib-card-footer">
+          <button class="btn btn-secondary btn-sm" onclick="lihatProfil(${n.id}, '${(n.title||'').replace(/'/g,'')}')">
+            <span class="material-symbols-outlined">analytics</span> Profil
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='mimicry.html?source_id=${n.id}'">
+            <span class="material-symbols-outlined">psychology</span> Tiru Gaya
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="confirmDelete(${n.id}, '${(n.title||'').replace(/'/g,'')}', 'library')">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function toggleLib(novelId, cb) {
+    if (!novelId) return;
+    try {
+      await fetch('/api/novels/' + novelId + '/update-library', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_in_library: cb.checked ? 1 : 0 })
+      });
+      toast.success(cb.checked ? 'Ditambahkan ke referensi RAG' : 'Dihapus dari referensi RAG');
+    } catch(err) {
+      toast.error('Gagal mengubah status');
+      cb.checked = !cb.checked;
+    }
+  }
+
+  async function lihatProfil(id, judul) {
+    document.getElementById('profile-modal-title').textContent = 'Profil Gaya: ' + judul;
+    document.getElementById('profile-modal-body').innerHTML = '<div class="skeleton skeleton-text w-80" style="height:1.5rem; margin-bottom:10px;"></div><div class="skeleton skeleton-text w-60"></div>';
+    openModal('profile-modal');
+    try {
+      const res = await fetch('/api/library/' + id + '/profile');
+      const data = await res.json();
+      const sp = data.style_profile || {};
+      document.getElementById('profile-modal-body').innerHTML = `
+        <div class="profile-grid">
+          ${renderProfileField('Gaya Penulisan', sp.writing_style)}
+          ${renderProfileField('Ritme Kalimat', sp.sentence_rhythm)}
+          ${renderProfileField('POV', sp.pov)}
+          ${renderProfileField('Tone', sp.tone)}
+          ${renderProfileField('Kosakata', sp.vocabulary_level)}
+          ${renderProfileField('Tema', sp.themes)}
+        </div>
+        ${sp.sample_paragraph ? `<div class="profile-sample">"${sp.sample_paragraph}"</div>` : ''}
+      `;
+    } catch(err) {
+      document.getElementById('profile-modal-body').innerHTML = '<p style="color:var(--color-error);">Gagal memuat profil</p>';
+    }
+  }
+
+  function renderProfileField(label, value) {
+    if (!value) return '';
+    return `<div class="profile-field"><div class="profile-field-label">${label}</div><div>${value}</div></div>`;
+  }
+
+  // Upload
+  function openUploadModal() {
+    document.getElementById('up-judul').value = '';
+    document.getElementById('up-author').value = '';
+    document.getElementById('up-file').value = '';
+    document.getElementById('up-filename').textContent = '';
+    document.getElementById('up-progress').style.display = 'none';
+    openModal('upload-modal');
+  }
+
+  function showFileName(input) {
+    document.getElementById('up-filename').textContent = input.files[0] ? '📎 ' + input.files[0].name : '';
+  }
+
+  async function doUpload() {
+    const judul = document.getElementById('up-judul').value.trim();
+    const file = document.getElementById('up-file').files[0];
+    if (!judul) return toast.error('Judul wajib diisi');
+    if (!file) return toast.error('Pilih file novel terlebih dahulu');
+
+    const btn = document.getElementById('btn-upload');
+    btn.disabled = true;
+    document.getElementById('up-progress').style.display = '';
+    document.getElementById('up-bar').style.width = '10%';
+    document.getElementById('up-status').textContent = 'Mengunggah file…';
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', judul);
+      formData.append('author', document.getElementById('up-author').value);
+
+      const res = await fetch('/api/library/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Upload gagal');
+
+      document.getElementById('up-bar').style.width = '50%';
+      document.getElementById('up-status').textContent = 'Menganalisis gaya penulisan…';
+
+      // Poll via SSE
+      const novelId = data.novel_id;
+      await new Promise((resolve, reject) => {
+        const es = new EventSource('/api/library/upload/progress/' + novelId);
+        es.addEventListener('progress', e => {
+          const d = JSON.parse(e.data);
+          document.getElementById('up-status').textContent = d.step || 'Memproses…';
+          document.getElementById('up-bar').style.width = '70%';
+        });
+        es.addEventListener('done', () => {
+          es.close();
+          resolve();
+        });
+        es.addEventListener('error', e => {
+          es.close();
+          reject(new Error('Analisis gagal'));
+        });
+        setTimeout(() => { es.close(); resolve(); }, 120000);
+      });
+
+      document.getElementById('up-bar').style.width = '100%';
+      document.getElementById('up-status').textContent = '✅ Selesai!';
+      toast.success('Novel berhasil diupload dan dianalisis');
+      closeModal('upload-modal');
+      allLibrary = [];
+      loadLibrary();
+    } catch(err) {
+      toast.error('Upload gagal: ' + err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // Delete
+  let pendingDelete = null;
+  function confirmDelete(id, judul, type) {
+    pendingDelete = { id, type };
+    document.getElementById('delete-confirm-text').textContent = `Hapus "${judul}"? Aksi ini tidak bisa dibatalkan.`;
+    document.getElementById('btn-confirm-delete').onclick = doDelete;
+    openModal('delete-modal');
+  }
+
+  async function doDelete() {
+    if (!pendingDelete) return;
+    try {
+      const { id, type } = pendingDelete;
+      const url = type === 'library' ? '/api/library/' + id : '/api/editor/dokumen/' + id;
+      const res = await fetch(url, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Gagal menghapus');
+      toast.success('Berhasil dihapus');
+      closeModal('delete-modal');
+      if (type === 'library') { allLibrary = []; loadLibrary(); }
+      else loadNovels();
+    } catch(err) {
+      toast.error('Gagal menghapus: ' + err.message);
+    }
+  }
+
+  function getGenreIcon(title) {
+    if (!title) return 'menu_book';
+    const t = title.toLowerCase();
+    if (t.includes('cinta') || t.includes('love') || t.includes('romance')) return 'favorite';
+    if (t.includes('horor') || t.includes('horror')) return 'mood_bad';
+    if (t.includes('misteri') || t.includes('thriller')) return 'search';
+    if (t.includes('fantasi') || t.includes('kerajaan')) return 'castle';
+    return 'menu_book';
+  }
+
+  function formatTgl(dt) {
+    if (!dt) return '-';
+    return new Date(dt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  loadNovels();
+</script>
+</body>
+</html>

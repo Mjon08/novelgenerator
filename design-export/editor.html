@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor Novel — novelGENerator AI</title>
+  <link rel="stylesheet" href="https://cdn.quilljs.com/2.0.2/quill.snow.css">
+  <link rel="stylesheet" href="editor.css">
+  <link rel="stylesheet" href="shared/shared.css">
+  <style>
+    /* ── Editor layout override ─────────────────────────── */
+    body { background: var(--color-bg); }
+    .app { display: block; }
+    #app-sidebar-container { display: none; }
+
+    /* ── Menu Bar ────────────────────────────────────────── */
+    #menubar {
+      background: var(--color-inverse-surface);
+      color: var(--color-inverse-on-surface);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 2px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    #menubar .logo {
+      color: var(--color-inverse-on-surface);
+      text-decoration: none;
+      font-size: 0.85rem;
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      opacity: 0.8;
+    }
+    #menubar .logo:hover { opacity: 1; background: rgba(255,255,255,0.08); }
+    .menu-btn {
+      background: none;
+      border: none;
+      color: var(--color-inverse-on-surface);
+      font-size: 0.82rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      position: relative;
+      height: 32px;
+    }
+    .menu-btn:hover { background: rgba(255,255,255,0.1); }
+    .menu-btn.active { background: rgba(255,255,255,0.15); }
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--color-surface-lowest);
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      min-width: 200px;
+      z-index: 300;
+      padding: 4px 0;
+      margin-top: 2px;
+    }
+    .menu-btn.open .dropdown { display: block; }
+    .dropdown-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--color-on-surface);
+      white-space: nowrap;
+    }
+    .dropdown-item:hover { background: var(--color-surface-low); }
+    .dropdown-sep { height: 1px; background: var(--color-outline-variant); margin: 4px 0; }
+    .dropdown-item kbd {
+      float: right;
+      font-size: 0.72rem;
+      color: var(--color-on-surface-variant);
+      background: var(--color-surface-container);
+      padding: 1px 5px;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+    }
+    .spacer { flex: 1; }
+    #doc-title-input {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius);
+      color: var(--color-inverse-on-surface);
+      font-size: 0.85rem;
+      font-family: var(--font-serif);
+      padding: 4px 10px;
+      width: 240px;
+      text-align: center;
+    }
+    #doc-title-input:focus { outline: none; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+    #autosave-indicator {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      opacity: 0.7;
+      padding: 0 8px;
+    }
+    #autosave-indicator .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #4ade80;
+    }
+    #autosave-indicator.saving .dot { background: #fbbf24; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── Formatting Toolbar ──────────────────────────────── */
+    #toolbar {
+      background: var(--color-surface-lowest);
+      border-bottom: 1px solid var(--color-outline-variant);
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 2px;
+      position: fixed;
+      top: 40px;
+      left: 0;
+      right: 0;
+      z-index: 190;
+      overflow-x: auto;
+    }
+    .toolbar-group { display: flex; align-items: center; gap: 1px; padding: 0 4px; border-right: 1px solid var(--color-outline-variant); }
+    .toolbar-group:last-child { border-right: none; }
+    .tb-btn {
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      color: var(--color-on-surface);
+    }
+    .tb-btn:hover { background: var(--color-surface-low); }
+    .tb-btn.active { background: var(--color-primary-fixed); color: var(--color-primary); }
+    .tb-btn svg { width: 14px; height: 14px; fill: currentColor; }
+    .tb-select {
+      height: 28px;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-lowest);
+      font-size: 0.78rem;
+      padding: 0 4px;
+      cursor: pointer;
+      color: var(--color-on-surface);
+    }
+    .tb-ai-btn {
+      background: var(--color-primary-fixed);
+      border: 1px solid var(--color-primary-container);
+      border-radius: var(--radius-sm);
+      color: var(--color-primary);
+      font-size: 0.78rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 28px;
+    }
+    .tb-ai-btn:hover { background: var(--color-primary-container); }
+    .tb-ai-btn .material-symbols-outlined { font-size: 15px; }
+
+    /* ── Main Editor Layout ───────────────────────────────── */
+    #editor-layout {
+      display: flex;
+      position: fixed;
+      top: 80px;
+      bottom: 32px;
+      left: 0;
+      right: 0;
+    }
+
+    /* ── Sidebar (chapter list) ──────────────────────────── */
+    #sidebar {
+      width: 220px;
+      background: var(--color-surface-low);
+      border-right: 1px solid var(--color-outline-variant);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex-shrink: 0;
+      transition: width 0.25s ease;
+    }
+    #sidebar.hidden { width: 0; }
+    #sidebar-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--color-outline-variant);
+      flex-shrink: 0;
+    }
+    .sidebar-tab {
+      flex: 1;
+      padding: 8px 4px;
+      background: none;
+      border: none;
+      font-size: 0.75rem;
+      cursor: pointer;
+      color: var(--color-on-surface-variant);
+      border-bottom: 2px solid transparent;
+    }
+    .sidebar-tab.active {
+      color: var(--color-primary);
+      border-bottom-color: var(--color-primary);
+      font-weight: 600;
+    }
+    #sidebar-content { flex: 1; overflow-y: auto; padding: 8px; }
+    .sidebar-section-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--color-on-surface-variant);
+      padding: 8px 4px 4px;
+      font-weight: 600;
+    }
+    #chapter-list { display: flex; flex-direction: column; gap: 2px; }
+    .chapter-item {
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--color-on-surface);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chapter-item:hover { background: var(--color-surface-container); }
+    .chapter-item.active { background: var(--color-primary-fixed); color: var(--color-primary); font-weight: 600; }
+    .sidebar-add-btn {
+      width: 100%;
+      padding: 8px;
+      background: none;
+      border: 1px dashed var(--color-outline-variant);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--color-primary);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .sidebar-add-btn:hover { background: var(--color-primary-fixed); }
+
+    /* ── Canvas / Paper ──────────────────────────────────── */
+    #canvas-area {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--color-bg);
+      display: flex;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+    #paper {
+      width: 100%;
+      max-width: 720px;
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 2px 20px rgba(17,28,44,0.08), 0 0 0 1px var(--color-outline-variant);
+      min-height: calc(100vh - 200px);
+      overflow: hidden;
+    }
+
+    /* ── Quill overrides ─────────────────────────────────── */
+    .ql-container {
+      border: none !important;
+      font-family: var(--font-serif) !important;
+      font-size: 16px;
+      line-height: 1.9;
+    }
+    .ql-editor {
+      padding: 48px 56px !important;
+      min-height: 600px;
+      color: var(--color-on-surface);
+      font-family: var(--font-serif) !important;
+      line-height: 1.9;
+    }
+    .ql-editor p { margin-bottom: 1em; }
+    .ql-editor h1 {
+      font-family: var(--font-serif) !important;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 0.5em;
+      margin-top: 1.5em;
+    }
+    .ql-editor h2 {
+      font-family: var(--font-serif) !important;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--color-on-surface);
+      margin-bottom: 0.5em;
+      margin-top: 1.2em;
+      border-bottom: 1px solid var(--color-outline-variant);
+      padding-bottom: 0.25em;
+    }
+    .ql-editor h3 {
+      font-family: var(--font-serif) !important;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.4em;
+      margin-top: 1em;
+    }
+    .ql-editor blockquote {
+      border-left: 3px solid var(--color-primary) !important;
+      padding: 4px 16px !important;
+      margin: 16px 0 !important;
+      font-style: italic;
+      color: var(--color-on-surface-variant);
+      background: var(--color-surface-low);
+    }
+    .ql-toolbar { display: none !important; }
+
+    /* ── Status Bar ──────────────────────────────────────── */
+    #statusbar {
+      background: var(--color-inverse-surface);
+      color: var(--color-inverse-on-surface);
+      height: 32px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 16px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      font-size: 0.75rem;
+      opacity: 0.9;
+    }
+    .stat { display: flex; align-items: center; gap: 4px; opacity: 0.8; }
+    .stat:hover { opacity: 1; }
+    .stat .material-symbols-outlined { font-size: 14px; }
+    #word-target-section { display: flex; align-items: center; gap: 8px; }
+    #word-target-bar {
+      width: 80px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    #word-target-fill { height: 100%; background: #4ade80; border-radius: 2px; transition: width 0.5s; }
+
+    /* ── AI Float Toolbar ────────────────────────────────── */
+    #ai-float-toolbar {
+      display: none;
+      position: fixed;
+      background: var(--color-inverse-surface);
+      border-radius: var(--radius-lg);
+      padding: 4px;
+      gap: 2px;
+      box-shadow: var(--shadow-md);
+      z-index: 500;
+    }
+    #ai-float-toolbar.visible { display: flex; }
+    .ai-float-btn {
+      background: none;
+      border: none;
+      color: var(--color-inverse-on-surface);
+      padding: 6px 10px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-size: 0.78rem;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ai-float-btn:hover { background: rgba(255,255,255,0.12); }
+    .ai-float-btn .material-symbols-outlined { font-size: 14px; }
+
+    /* ── AI Continue Bar ─────────────────────────────────── */
+    #ai-continue-bar {
+      display: none;
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-inverse-surface);
+      color: var(--color-inverse-on-surface);
+      border-radius: var(--radius-lg);
+      padding: 10px 16px;
+      gap: 12px;
+      align-items: center;
+      box-shadow: var(--shadow-md);
+      z-index: 400;
+      font-size: 0.82rem;
+    }
+    #ai-continue-bar.visible { display: flex; }
+    .ai-continue-btn {
+      padding: 5px 12px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    .ai-continue-btn.simpan { background: var(--color-primary); color: #fff; }
+    .ai-continue-btn.batal { background: rgba(255,255,255,0.1); color: var(--color-inverse-on-surface); }
+
+    /* ── Find & Replace ──────────────────────────────────── */
+    #find-replace-panel {
+      display: none;
+      position: fixed;
+      top: 90px;
+      right: 20px;
+      background: var(--color-surface-lowest);
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      width: 300px;
+      box-shadow: var(--shadow-md);
+      z-index: 400;
+    }
+    #find-replace-panel.visible { display: block; }
+    #find-replace-panel input {
+      width: 100%;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius);
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      background: var(--color-surface-low);
+      color: var(--color-on-surface);
+      margin-bottom: 6px;
+    }
+    #find-replace-panel input:focus { outline: none; border-color: var(--color-primary); }
+    .fr-row { display: flex; gap: 6px; align-items: center; }
+    .fr-row button {
+      padding: 5px 12px;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius-sm);
+      background: var(--color-surface-low);
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: var(--color-on-surface);
+    }
+    .fr-row button.primary { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+    /* ── Modals (editor-specific) ────────────────────────── */
+    .modal-overlay { z-index: 600; }
+    .modal-box {
+      background: var(--color-surface-lowest);
+      border-radius: var(--radius-lg);
+      width: 480px;
+      max-width: 95vw;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-outline-variant);
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-outline-variant);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--color-on-surface-variant);
+      line-height: 1;
+    }
+    .modal-body { padding: 20px; }
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--color-outline-variant);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .modal-body input, .modal-body select {
+      width: 100%;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      background: var(--color-surface-low);
+      color: var(--color-on-surface);
+    }
+    .modal-body label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 4px;
+      color: var(--color-on-surface);
+    }
+    .modal-body > div { margin-bottom: 14px; }
+
+    /* ── Toast container ─────────────────────────────────── */
+    #toast-container { z-index: 1000; }
+
+    /* ── Focus mode ──────────────────────────────────────── */
+    body.focus-mode #toolbar,
+    body.focus-mode #statusbar,
+    body.focus-mode #sidebar { opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    body.focus-mode:hover #toolbar,
+    body.focus-mode:hover #statusbar { opacity: 1; pointer-events: auto; }
+
+    /* ── Revision list in sidebar ────────────────────────── */
+    .revision-item {
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: var(--color-on-surface-variant);
+      border-bottom: 1px solid var(--color-outline-variant);
+    }
+    .revision-item:hover { background: var(--color-surface-container); }
+
+    /* ── Doc list in modal ───────────────────────────────── */
+    .doc-list-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--color-outline-variant);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.88rem;
+    }
+    .doc-list-item:hover { background: var(--color-surface-low); }
+    .doc-list-item-title { font-weight: 600; font-family: var(--font-serif); }
+    .doc-list-item-meta { font-size: 0.72rem; color: var(--color-on-surface-variant); margin-top: 2px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Menu Bar ────────────────────────────────────────────────────────────── -->
+<div id="menubar">
+  <a href="index.html" class="logo" style="margin-right:4px;" title="Dashboard">
+    <span class="material-symbols-outlined" style="font-size:16px;">home</span>
+  </a>
+  <a href="library.html" class="logo" title="Perpustakaan" style="font-size:0.8rem;">
+    <span class="material-symbols-outlined" style="font-size:14px;">arrow_back</span>
+    Perpustakaan
+  </a>
+
+  <button class="menu-btn" onclick="toggleMenu(this)">File
+    <div class="dropdown">
+      <button class="dropdown-item" onclick="bukaModalBaru()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">add</span> Dokumen Baru
+      </button>
+      <button class="dropdown-item" onclick="bukaModalDaftar()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">folder_open</span> Buka Dokumen...
+      </button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="simpanManual()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">save</span> Simpan <kbd>Ctrl+S</kbd>
+      </button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="eksporDocx()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">download</span> Ekspor .docx
+      </button>
+      <button class="dropdown-item" onclick="eksporPdf()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">picture_as_pdf</span> Ekspor HTML/PDF
+      </button>
+      <button class="dropdown-item" onclick="eksporTxt()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">text_snippet</span> Ekspor .txt
+      </button>
+    </div>
+  </button>
+
+  <button class="menu-btn" onclick="toggleMenu(this)">Edit
+    <div class="dropdown">
+      <button class="dropdown-item" onclick="document.execCommand('undo')">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">undo</span> Undo <kbd>Ctrl+Z</kbd>
+      </button>
+      <button class="dropdown-item" onclick="document.execCommand('redo')">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">redo</span> Redo <kbd>Ctrl+Y</kbd>
+      </button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="toggleFindReplace()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">find_replace</span> Cari & Ganti <kbd>Ctrl+F</kbd>
+      </button>
+    </div>
+  </button>
+
+  <button class="menu-btn" onclick="toggleMenu(this)">Format
+    <div class="dropdown">
+      <button class="dropdown-item" onclick="quill.format('bold', !quill.getFormat().bold)"><b>B</b> Bold <kbd>Ctrl+B</kbd></button>
+      <button class="dropdown-item" onclick="quill.format('italic', !quill.getFormat().italic)"><em>I</em> Italic <kbd>Ctrl+I</kbd></button>
+      <button class="dropdown-item" onclick="quill.format('underline', !quill.getFormat().underline)"><u>U</u> Underline <kbd>Ctrl+U</kbd></button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="quill.format('header', 1)">H1 Judul Utama</button>
+      <button class="dropdown-item" onclick="quill.format('header', 2)">H2 Judul Bab</button>
+      <button class="dropdown-item" onclick="quill.format('header', false)">¶ Paragraf Normal</button>
+    </div>
+  </button>
+
+  <button class="menu-btn" onclick="toggleMenu(this)">AI Bantu
+    <div class="dropdown">
+      <button class="dropdown-item" onclick="aiLanjutkan()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">auto_awesome</span> Lanjutkan Tulisan
+      </button>
+      <button class="dropdown-item" onclick="aiPerbaiki('netral')">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">edit</span> Perbaiki Teks Terpilih
+      </button>
+      <button class="dropdown-item" onclick="aiPerbaiki('formal')">Formalkan</button>
+      <button class="dropdown-item" onclick="aiPerbaiki('santai')">Santaikan</button>
+      <button class="dropdown-item" onclick="aiPerbaiki('puitis')">Jadikan Puitis</button>
+      <button class="dropdown-item" onclick="aiPerbaiki('singkat')">Persingkat</button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="aiCekKonsistensi()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">fact_check</span> Cek Konsistensi Novel
+      </button>
+    </div>
+  </button>
+
+  <button class="menu-btn" onclick="toggleMenu(this)">Tampilan
+    <div class="dropdown">
+      <button class="dropdown-item" onclick="toggleSidebar()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">view_sidebar</span> Panel Bab
+      </button>
+      <button class="dropdown-item" onclick="toggleFocusMode()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">center_focus_strong</span> Mode Fokus <kbd>F11</kbd>
+      </button>
+      <button class="dropdown-item" onclick="toggleDarkMode()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">dark_mode</span> Mode Gelap
+      </button>
+      <div class="dropdown-sep"></div>
+      <button class="dropdown-item" onclick="bukaTargetHarian()">
+        <span class="material-symbols-outlined" style="font-size:14px;vertical-align:middle;">track_changes</span> Target Kata Harian
+      </button>
+    </div>
+  </button>
+
+  <div class="spacer"></div>
+  <input id="doc-title-input" value="Dokumen Baru" onchange="gantiJudulDokumen(this.value)" title="Klik untuk ganti judul">
+  <div class="spacer"></div>
+  <div id="autosave-indicator" class="saved">
+    <div class="dot"></div>
+    <span id="autosave-text">Tersimpan</span>
+  </div>
+</div>
+
+<!-- ── Formatting Toolbar ───────────────────────────────────────────────────── -->
+<div id="toolbar">
+  <div class="toolbar-group">
+    <select class="tb-select" id="tb-font" onchange="quill.format('font', this.value)" title="Font">
+      <option value="">Times New Roman</option>
+      <option value="arial">Arial</option>
+      <option value="georgia">Georgia</option>
+    </select>
+    <select class="tb-select" id="tb-size" onchange="quill.format('size', this.value)" title="Ukuran">
+      <option value="">12pt</option>
+      <option value="small">10pt</option>
+      <option value="large">14pt</option>
+      <option value="huge">18pt</option>
+    </select>
+  </div>
+
+  <div class="toolbar-group">
+    <select class="tb-select" id="tb-header" onchange="quill.format('header', this.value ? parseInt(this.value) : false)" title="Gaya">
+      <option value="">Paragraf</option>
+      <option value="1">Judul 1</option>
+      <option value="2">Judul 2</option>
+      <option value="3">Judul 3</option>
+    </select>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="tb-btn" id="tb-bold" onclick="quill.format('bold', !quill.getFormat().bold)" title="Bold (Ctrl+B)"><b>B</b></button>
+    <button class="tb-btn" id="tb-italic" onclick="quill.format('italic', !quill.getFormat().italic)" title="Italic (Ctrl+I)"><i>I</i></button>
+    <button class="tb-btn" id="tb-underline" onclick="quill.format('underline', !quill.getFormat().underline)" title="Underline (Ctrl+U)"><u>U</u></button>
+    <button class="tb-btn" id="tb-strike" onclick="quill.format('strike', !quill.getFormat().strike)" title="Strikethrough"><s>S</s></button>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="tb-btn" onclick="quill.format('align', false)" title="Rata Kiri">
+      <svg viewBox="0 0 16 16"><path d="M2 4h12v1.5H2V4zm0 3h8v1.5H2V7zm0 3h12v1.5H2V10zm0 3h8v1.5H2V13z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="quill.format('align', 'center')" title="Tengah">
+      <svg viewBox="0 0 16 16"><path d="M2 4h12v1.5H2V4zm2 3h8v1.5H4V7zm-2 3h12v1.5H2V10zm2 3h8v1.5H4V13z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="quill.format('align', 'right')" title="Kanan">
+      <svg viewBox="0 0 16 16"><path d="M2 4h12v1.5H2V4zm4 3h8v1.5H6V7zm-4 3h12v1.5H2V10zm4 3h8v1.5H6V13z"/></svg>
+    </button>
+    <button class="tb-btn" onclick="quill.format('align', 'justify')" title="Rata Kanan-Kiri">
+      <svg viewBox="0 0 16 16"><path d="M2 4h12v1.5H2V4zm0 3h12v1.5H2V7zm0 3h12v1.5H2V10zm0 3h8v1.5H2V13z"/></svg>
+    </button>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="tb-btn" onclick="quill.format('list', 'bullet')" title="Daftar Poin">
+      <svg viewBox="0 0 16 16"><circle cx="2.5" cy="5" r="1.5"/><path d="M5 4.25h9v1.5H5V4.25zm0 5h9v1.5H5V9.25z"/><circle cx="2.5" cy="10" r="1.5"/></svg>
+    </button>
+    <button class="tb-btn" onclick="quill.format('list', 'ordered')" title="Daftar Nomor">
+      <svg viewBox="0 0 16 16"><path d="M2 3h1v3H2V3zm3 1h9v1.5H5V4zm-3 5h1v3H2V9zm3 1h9v1.5H5V10z"/></svg>
+    </button>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="tb-btn" onclick="quill.format('blockquote', !quill.getFormat().blockquote)" title="Kutipan">"</button>
+    <button class="tb-btn" onclick="quill.format('indent', '+1')" title="Indentasi →">→</button>
+    <button class="tb-btn" onclick="quill.format('indent', '-1')" title="Indentasi ←">←</button>
+  </div>
+
+  <div class="toolbar-group">
+    <button class="tb-ai-btn" onclick="aiLanjutkan()" title="Lanjutkan Tulisan AI">
+      <span class="material-symbols-outlined">auto_awesome</span> Lanjutkan
+    </button>
+    <button class="tb-ai-btn" onclick="aiPerbaiki('netral')" title="Perbaiki dengan AI">
+      <span class="material-symbols-outlined">edit</span> Perbaiki
+    </button>
+    <button class="tb-ai-btn" onclick="aiCekKonsistensi()" title="Cek Konsistensi">
+      <span class="material-symbols-outlined">fact_check</span> Cek
+    </button>
+  </div>
+</div>
+
+<!-- ── Main Layout ──────────────────────────────────────────────────────────── -->
+<div id="editor-layout">
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <div id="sidebar-tabs">
+      <button class="sidebar-tab active" onclick="switchSidebarTab('bab', this)">Bab</button>
+      <button class="sidebar-tab" onclick="switchSidebarTab('riwayat', this)">Riwayat</button>
+    </div>
+    <div id="sidebar-content">
+      <!-- Bab tab -->
+      <div id="tab-bab">
+        <div class="sidebar-section-title">Daftar Bab</div>
+        <div id="chapter-list"></div>
+        <button class="sidebar-add-btn" onclick="tambahBab()">
+          <span class="material-symbols-outlined" style="font-size:16px;">add</span> Tambah Bab
+        </button>
+      </div>
+      <!-- Riwayat tab -->
+      <div id="tab-riwayat" style="display:none">
+        <div class="sidebar-section-title">Riwayat Revisi</div>
+        <div id="revision-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div id="canvas-area">
+    <div id="paper">
+      <div id="quill-editor"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Status Bar ───────────────────────────────────────────────────────────── -->
+<div id="statusbar">
+  <span class="stat">
+    <span class="material-symbols-outlined">edit_note</span>
+    <span id="stat-words">0</span> kata
+  </span>
+  <span class="stat">
+    <span class="material-symbols-outlined">text_fields</span>
+    <span id="stat-chars">0</span> karakter
+  </span>
+  <span class="stat">
+    <span class="material-symbols-outlined">bookmark</span>
+    <span id="stat-chapters">0</span> bab
+  </span>
+  <span class="stat">
+    <span class="material-symbols-outlined">schedule</span>
+    <span id="stat-saved">—</span>
+  </span>
+  <div class="spacer"></div>
+  <div id="word-target-section" style="display:none">
+    <span id="daily-target-label">Target: <span id="target-progress">0/0</span></span>
+    <div id="word-target-bar"><div id="word-target-fill" style="width:0%"></div></div>
+  </div>
+  <span class="stat" style="cursor:pointer" onclick="toggleDarkMode()" title="Toggle gelap/terang">
+    <span class="material-symbols-outlined">dark_mode</span>
+  </span>
+  <span class="stat" style="cursor:pointer" onclick="toggleSidebar()" title="Panel bab">
+    <span class="material-symbols-outlined">view_sidebar</span>
+  </span>
+</div>
+
+<!-- ── AI Floating Toolbar ──────────────────────────────────────────────────── -->
+<div id="ai-float-toolbar">
+  <button class="ai-float-btn" onclick="aiPerbaiki('netral')">
+    <span class="material-symbols-outlined">edit</span> Perbaiki
+  </button>
+  <button class="ai-float-btn" onclick="aiPerbaiki('formal')">Formal</button>
+  <button class="ai-float-btn" onclick="aiPerbaiki('santai')">Santai</button>
+  <button class="ai-float-btn" onclick="aiPerbaiki('puitis')">Puitis</button>
+  <button class="ai-float-btn" onclick="aiPerbaiki('singkat')">
+    <span class="material-symbols-outlined">content_cut</span> Singkat
+  </button>
+</div>
+
+<!-- ── AI Continue Bar ───────────────────────────────────────────────────────── -->
+<div id="ai-continue-bar">
+  <span class="spinner" id="ai-spinner"></span>
+  <span id="ai-continue-label">Menulis...</span>
+  <button class="ai-continue-btn simpan" onclick="simpanKelanjutan()">✓ Simpan</button>
+  <button class="ai-continue-btn batal" onclick="batalKelanjutan()">✕ Batalkan</button>
+</div>
+
+<!-- ── Find & Replace ────────────────────────────────────────────────────────── -->
+<div id="find-replace-panel">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <strong style="font-size:13px">Cari & Ganti</strong>
+    <button onclick="toggleFindReplace()" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;">
+      <span class="material-symbols-outlined" style="font-size:18px;color:var(--color-on-surface-variant);">close</span>
+    </button>
+  </div>
+  <input type="text" id="find-input" placeholder="Cari..." oninput="cariTeks()">
+  <input type="text" id="replace-input" placeholder="Ganti dengan...">
+  <div class="fr-row" style="margin-top:6px">
+    <button onclick="gantiSatu()">Ganti</button>
+    <button class="primary" onclick="gantiSemua()">Ganti Semua</button>
+    <span id="find-count" style="font-size:11px;color:var(--color-on-surface-variant);align-self:center;margin-left:auto"></span>
+  </div>
+</div>
+
+<!-- ── Modal: Dokumen Baru ────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-baru">
+  <div class="modal-box">
+    <div class="modal-header">
+      Dokumen Baru
+      <button class="modal-close" onclick="tutupModal('modal-baru')">×</button>
+    </div>
+    <div class="modal-body">
+      <div>
+        <label>Judul Dokumen</label>
+        <input type="text" id="baru-judul" placeholder="Masukkan judul novel...">
+      </div>
+      <div>
+        <label>Impor dari Novel yang Sudah Ada (opsional)</label>
+        <select id="baru-novel-select">
+          <option value="">— Mulai dari kosong —</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="tutupModal('modal-baru')">Batal</button>
+      <button class="btn btn-primary" onclick="buatDokumenBaru()">Buat Dokumen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Daftar Dokumen ──────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-daftar">
+  <div class="modal-box" style="width:600px">
+    <div class="modal-header">
+      Buka Dokumen
+      <button class="modal-close" onclick="tutupModal('modal-daftar')">×</button>
+    </div>
+    <div class="modal-body" id="daftar-dokumen-list"></div>
+  </div>
+</div>
+
+<!-- ── Modal: Target Harian ───────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-target">
+  <div class="modal-box" style="width:340px">
+    <div class="modal-header">
+      Target Kata Harian
+      <button class="modal-close" onclick="tutupModal('modal-target')">×</button>
+    </div>
+    <div class="modal-body">
+      <label>Target kata per hari:</label>
+      <input type="number" id="target-input" value="1000" min="100" max="10000" step="100">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="simpanTarget()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modal: Konsistensi ─────────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="consistency-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      Hasil Cek Konsistensi
+      <button class="modal-close" onclick="tutupModal('consistency-modal')">×</button>
+    </div>
+    <div class="modal-body" id="consistency-result"></div>
+  </div>
+</div>
+
+<!-- ── Toast container ────────────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── Scripts ────────────────────────────────────────────────────────────────── -->
+<script src="https://cdn.quilljs.com/2.0.2/quill.js"></script>
+<script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script src="https://unpkg.com/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="editor.js"></script>
+<script src="editorExport.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  // Handle ?novel_id=X URL param — auto-create dokumen and redirect
+  (function() {
+    const params = new URLSearchParams(location.search);
+    const novelId = params.get('novel_id');
+    if (novelId && !params.get('id')) {
+      fetch('/api/editor/dokumen/baru', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ novel_id: novelId, judul: 'Novel ' + novelId })
+      }).then(r => r.json()).then(data => {
+        if (data.id) {
+          window.location.href = 'editor.html?id=' + data.id;
+        }
+      }).catch(() => {});
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — novelGENerator</title>
+  <link rel="stylesheet" href="shared/shared.css">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 380px;
+      background: var(--color-surface-lowest);
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 40px 32px;
+    }
+
+    .login-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-family: var(--font-serif);
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: var(--color-primary);
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: var(--color-on-surface-variant);
+      font-size: 0.85rem;
+      margin-bottom: 28px;
+    }
+
+    .login-field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-on-surface);
+      margin-bottom: 6px;
+    }
+
+    .login-field input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--color-outline-variant);
+      border-radius: var(--radius);
+      background: var(--color-surface-low);
+      color: var(--color-on-surface);
+      font-size: 0.9rem;
+    }
+
+    .login-field input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background: var(--color-surface-lowest);
+    }
+
+    .login-error {
+      display: none;
+      background: rgba(186, 26, 26, 0.08);
+      color: var(--color-error, #ba1a1a);
+      border: 1px solid rgba(186, 26, 26, 0.25);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+    }
+
+    .login-error.visible { display: block; }
+
+    .login-submit {
+      width: 100%;
+      padding: 11px;
+      margin-top: 20px;
+      background: var(--color-primary);
+      color: var(--color-on-primary);
+      border: none;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .login-submit:hover { opacity: 0.9; }
+    .login-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-logo">
+    <span class="material-symbols-outlined" aria-hidden="true">auto_stories</span>
+    novelGENerator
+  </div>
+  <p class="login-subtitle">Masukkan password untuk melanjutkan</p>
+
+  <div class="login-error" id="loginError"></div>
+
+  <form id="loginForm">
+    <div class="login-field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" autofocus required>
+    </div>
+    <button type="submit" class="login-submit" id="submitBtn">Masuk</button>
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('loginForm');
+  const errorBox = document.getElementById('loginError');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // Setelah login, kembalikan pengguna ke halaman yang tadi ingin diakses.
+  const params = new URLSearchParams(location.search);
+  const redirectTo = params.get('redirect') || 'index.html';
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove('visible');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Memeriksa...';
+
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: document.getElementById('password').value })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        errorBox.textContent = data.error || 'Gagal masuk';
+        errorBox.classList.add('visible');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Masuk';
+        return;
+      }
+
+      window.location.href = redirectTo;
+    } catch (err) {
+      errorBox.textContent = 'Tidak bisa terhubung ke server. Coba lagi.';
+      errorBox.classList.add('visible');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Masuk';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+
+<html class="h-full antialiased bg-background text-on-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Generation Screen - novelGENerator</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;family=Source+Serif+4:wght@400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dadadb",
+                        "outline-variant": "#c1c6d7",
+                        "surface-container-high": "#e8e8e9",
+                        "primary-fixed-dim": "#adc6ff",
+                        "tertiary-fixed-dim": "#ffb595",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#9e3d00",
+                        "surface-container-highest": "#e2e2e3",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface": "#f9f9fa",
+                        "on-secondary-fixed": "#0c006b",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#6462ec",
+                        "on-tertiary-fixed": "#351000",
+                        "on-primary-container": "#fefcff",
+                        "inverse-surface": "#2f3132",
+                        "primary-container": "#0070eb",
+                        "primary-fixed": "#d8e2ff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e2e2e3",
+                        "tertiary-container": "#c64f00",
+                        "on-surface-variant": "#414755",
+                        "on-tertiary-fixed-variant": "#7c2e00",
+                        "on-secondary-container": "#fffbff",
+                        "on-surface": "#1a1c1d",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-low": "#f3f3f4",
+                        "on-background": "#1a1c1d",
+                        "secondary-fixed": "#e2dfff",
+                        "background": "#f9f9fa",
+                        "outline": "#717786",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-bright": "#f9f9fa",
+                        "on-tertiary-container": "#fffbff",
+                        "secondary": "#4a47d2",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#005bc1",
+                        "on-primary-fixed": "#001a41",
+                        "inverse-primary": "#adc6ff",
+                        "surface-container": "#eeeeef",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#ffdbcc",
+                        "on-secondary-fixed-variant": "#332dbc",
+                        "on-primary-fixed-variant": "#004493",
+                        "secondary-fixed-dim": "#c2c1ff",
+                        "primary": "#0058bc"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "toolbar-height": "52px"
+                    },
+                    "fontFamily": {
+                        "body-lg": [
+                            "\"Source Serif 4\""
+                        ],
+                        "display-lg": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "headline-sm": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "headline-md": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "body-md": [
+                            "\"Source Serif 4\""
+                        ],
+                        "mono-sm": [
+                            "JetBrains Mono"
+                        ],
+                        "label-md": [
+                            "Plus Jakarta Sans"
+                        ],
+                        "label-sm": [
+                            "Plus Jakarta Sans"
+                        ]
+                    },
+                    "fontSize": {
+                        "body-lg": [
+                            "18px",
+                            {
+                                "lineHeight": "32px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "display-lg": [
+                            "34px",
+                            {
+                                "lineHeight": "41px",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "700"
+                            }
+                        ],
+                        "headline-sm": [
+                            "20px",
+                            {
+                                "lineHeight": "25px",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "headline-md": [
+                            "24px",
+                            {
+                                "lineHeight": "30px",
+                                "letterSpacing": "-0.01em",
+                                "fontWeight": "600"
+                            }
+                        ],
+                        "body-md": [
+                            "16px",
+                            {
+                                "lineHeight": "28px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "mono-sm": [
+                            "12px",
+                            {
+                                "lineHeight": "18px",
+                                "fontWeight": "400"
+                            }
+                        ],
+                        "label-md": [
+                            "14px",
+                            {
+                                "lineHeight": "20px",
+                                "fontWeight": "500"
+                            }
+                        ],
+                        "label-sm": [
+                            "12px",
+                            {
+                                "lineHeight": "16px",
+                                "letterSpacing": "0.02em",
+                                "fontWeight": "600"
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styles */
+        body {
+            background-color: theme('colors.background');
+        }
+        
+        /* Glassmorphism utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid theme('colors.outline-variant' / 30%);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.08);
+        }
+        
+        .dark .glass-panel {
+            background: rgba(47, 49, 50, 0.85);
+        }
+        
+        /* Custom scrollbar for canvas */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: theme('colors.surface-variant');
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline');
+        }
+        
+        /* Input focus glow */
+        .input-glow:focus-within {
+            box-shadow: 0 0 0 2px theme('colors.primary');
+            border-color: transparent;
+        }
+        
+        /* Range slider styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid theme('colors.outline-variant');
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+            margin-top: -6px;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: theme('colors.surface-variant');
+            border-radius: 2px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 3px theme('colors.primary-fixed');
+        }
+    </style>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="shared/nav.js"></script>
+<style id="dark-mode-style">
+  html.dark { color-scheme: dark; }
+  html.dark body { background-color: #0f0f12 !important; color: #f3f3f6 !important; }
+  html.dark header, html.dark aside { background-color: rgba(24,24,28,0.95) !important; border-color: rgba(255,255,255,0.1) !important; }
+  /* Kelas latar "surface" Tailwind (bg-surface, bg-surface/NN, bg-surface-container*,
+     bg-surface-variant, bg-surface-bright) memakai warna literal terang dari
+     tailwind.config, bukan CSS variable yang otomatis berubah saat mode gelap.
+     Sebelumnya hanya sebagian nama kelas didaftar manual, jadi varian dengan
+     modifier opacity (mis. bg-surface/60) lolos tidak ter-override dan kartu
+     tetap terang dengan teks putih di atasnya — nyaris tak terbaca. Selector
+     wildcard [class*="..."] menangkap SEMUA varian sekaligus. */
+  html.dark [class*="bg-surface"], html.dark [class*="bg-white"] { background-color: #1c1c22 !important; }
+  html.dark [class*="bg-surface-container-high"] { background-color: #26262e !important; }
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6, html.dark .text-on-surface { color: #fff !important; }
+  html.dark p, html.dark span, html.dark label, html.dark li, html.dark a:not(.bg-primary) { color: #c8c8d0 !important; }
+  html.dark .text-outline, html.dark .text-on-surface-variant { color: #9898a6 !important; }
+  html.dark .border, html.dark .border-b, html.dark [class*="border-outline"] { border-color: rgba(255,255,255,0.1) !important; }
+  html.dark input, html.dark textarea, html.dark select { background-color: #1e1e24 !important; color: #f3f3f6 !important; border-color: rgba(255,255,255,0.15) !important; }
+  /* Area kanvas pratinjau manuskrip memakai warna hex literal (bg-[#f0f1f2]),
+     bukan kelas Tailwind bernama — tidak tertangkap wildcard [class*] di atas. */
+  html.dark .bg-\[\#f0f1f2\] { background-color: #0f0f12 !important; }
+</style>
+</head>
+<body class="font-body-md text-body-md text-on-surface antialiased bg-[#f6f6f7] min-h-screen">
+<!-- Shared Component: SideNavBar -->
+<!-- SideNavBar (Collapsible Sidebar Drawer) -->
+<aside id="app-sidebar" class="w-[260px] h-[calc(100vh-68px)] fixed left-4 top-[60px] rounded-xl bg-white/95 dark:bg-[#18181c]/95 backdrop-blur-xl border border-outline-variant/30 z-40 p-4 flex flex-col justify-between shadow-xl transition-all duration-300 -translate-x-[300px]">
+  <div class="flex flex-col gap-1 overflow-y-auto">
+    <div class="mb-3 px-2 flex justify-between items-center"><p class="text-[11px] text-outline uppercase tracking-wider font-semibold">Studio AI</p><button onclick="toggleSidebar()" class="p-1 rounded text-outline hover:text-on-surface"><i class="ph ph-x text-[18px]"></i></button></div>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="index.html"><i class="ph ph-squares-four text-[20px]"></i> Dasbor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors !text-primary !bg-primary/10 font-semibold" href="generate.html"><i class="ph ph-magic-wand text-[20px]"></i> Buat Novel</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="editor.html"><i class="ph ph-pen-nib text-[20px]"></i> Editor</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="tulis.html"><i class="ph ph-article text-[20px]"></i> Tulis Dokumen</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="seri.html"><i class="ph ph-books text-[20px]"></i> Seri & Jilid</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="mimicry.html"><i class="ph ph-brain text-[20px]"></i> Tiru Gaya (DNA)</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="library.html"><i class="ph ph-book-bookmark text-[20px]"></i> Perpustakaan</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="evaluasi.html"><i class="ph ph-chart-line-up text-[20px]"></i> Evaluasi Kualitas</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="ekspor.html"><i class="ph ph-export text-[20px]"></i> Ekspor Karya</a>
+    <a class="flex items-center gap-3 px-3 py-2 rounded-lg font-label-md text-label-md transition-colors text-on-surface-variant hover:bg-surface-container" href="pengaturan.html"><i class="ph ph-gear text-[20px]"></i> Pengaturan</a>
+  </div>
+  <div class="pt-3 border-t border-outline-variant/20 flex flex-col gap-2">
+    <button onclick="toggleTheme()" class="theme-toggle-btn w-full bg-surface-container text-on-surface hover:bg-surface-variant p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-moon text-[18px]"></i><span>Ganti Mode</span></button>
+    <a href="generate.html" class="w-full bg-primary text-on-primary rounded-lg py-2.5 font-label-md text-label-md flex justify-center items-center gap-2 hover:bg-primary/90 transition-colors shadow-sm"><i class="ph ph-plus text-[18px]"></i>Buat Novel Baru</a>
+    <button onclick="logoutApp()" class="w-full bg-transparent text-on-surface-variant hover:bg-surface-container p-2 rounded-lg flex items-center justify-center gap-2 text-xs font-medium transition-colors"><i class="ph ph-sign-out text-[18px]"></i><span>Keluar</span></button>
+  </div>
+</aside>
+<!-- Main Content Area -->
+<main class="pt-[68px] px-4 sm:px-6 lg:px-8 pb-24 min-h-screen transition-all duration-300 w-full box-border overflow-x-hidden">
+<!-- Shared Component: TopAppBar -->
+<header class="fixed top-0 left-0 right-0 h-[52px] bg-white/90 dark:bg-[#18181c]/90 backdrop-blur-md border-b border-outline-variant/20 flex items-center justify-between px-4 z-40">
+  <div class="flex items-center gap-3">
+    <button onclick="toggleSidebar()" class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors" title="Buka/Tutup Sidebar"><i class="ph ph-sidebar-simple text-[22px]"></i></button>
+    <div class="hidden sm:flex items-center gap-1.5"><div class="w-3 h-3 rounded-full bg-[#ff5f56]"></div><div class="w-3 h-3 rounded-full bg-[#ffbd2e]"></div><div class="w-3 h-3 rounded-full bg-[#27c93f]"></div></div>
+    <div class="flex items-center gap-0.5 bg-surface-container/60 p-0.5 rounded-lg border border-outline-variant/20">
+      <button onclick="window.history.back()" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Kembali"><i class="ph ph-arrow-left text-[18px]"></i></button>
+      <a href="index.html" class="p-1 rounded hover:bg-surface-variant text-on-surface-variant transition-colors" title="Beranda"><i class="ph ph-house text-[18px]"></i></a>
+    </div>
+    <a href="index.html" class="font-bold text-on-surface text-[17px] tracking-tight hover:opacity-80 flex items-center gap-2"><i class="ph ph-sparkle text-primary text-[20px]"></i><span class="hidden sm:inline">novelGENerator Studio</span></a>
+  </div>
+  <div class="flex items-center gap-1.5">
+    <button onclick="toggleTheme()" class="theme-toggle-btn p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-moon text-[20px]"></i></button>
+    <a href="pengaturan.html" class="p-2 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"><i class="ph ph-gear text-[20px]"></i></a>
+  </div>
+</header>
+<!-- Split View Container -->
+<div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+<!-- Left Column: Settings Panel (Glassmorphism Form) -->
+<aside class="w-full lg:w-[400px] xl:w-[460px] h-full overflow-y-auto custom-scrollbar p-6 lg:p-8 border-r border-outline-variant/20 z-10 shrink-0 bg-surface/30 backdrop-blur-sm">
+<div class="max-w-md mx-auto flex flex-col gap-8">
+<!-- Header -->
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-1">Informasi Novel</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Konfigurasi parameter generasi AI.</p>
+</div>
+<!-- Model Selection -->
+<section class="flex flex-col gap-3">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider">AI Model</label>
+<div class="flex flex-wrap gap-2">
+<!-- Premium Models (Disabled/Dull) -->
+<button class="px-3 py-1.5 rounded-full border border-outline-variant/50 bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                                GPT-4o
+                            </button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant/50 bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1.5 opacity-60 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                                Claude 3
+                            </button>
+<!-- Free Models (Active/Highlighted) -->
+<button class="px-3 py-1.5 rounded-full border border-primary bg-primary/5 text-primary font-label-sm text-label-sm flex items-center gap-1.5 shadow-sm ring-1 ring-primary/20">
+<div class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></div>
+                                Gemma 7B
+                            </button>
+<button class="px-3 py-1.5 rounded-full border border-outline-variant bg-surface text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 hover:bg-surface-variant transition-colors">
+                                Ling
+                            </button>
+</div>
+</section>
+<!-- Premise Input -->
+<section class="flex flex-col gap-2">
+<label class="font-label-sm text-label-sm text-on-surface uppercase tracking-wider flex justify-between">
+                            Premis Cerita
+                            <span class="text-outline font-normal lowercase">Required</span>
+</label>
+<div class="relative input-glow rounded-lg transition-shadow bg-white">
+<textarea class="w-full bg-transparent border border-outline-variant/50 rounded-lg p-3 font-body-md text-body-md text-on-surface resize-none focus:ring-0 focus:border-transparent min-h-[120px] placeholder:text-outline/60" placeholder="Jelaskan ide utama cerita..."></textarea>
+<div class="absolute bottom-2 right-2 flex items-center gap-1 opacity-40">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+</div>
+</div>
+</section>
+</div>
+</aside>
+<!-- Right Column: Canvas Preview -->
+<section class="flex-1 h-full bg-[#f0f1f2] overflow-y-auto custom-scrollbar p-6 lg:p-12 relative flex justify-center">
+<!-- Toolbar Floating inside Canvas -->
+<div class="absolute top-6 right-6 flex items-center gap-2 z-20">
+<button class="w-8 h-8 rounded-lg bg-white border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">zoom_out</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-white border border-outline-variant/30 flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">zoom_in</span>
+</button>
+<div class="w-px h-5 bg-outline-variant/40 mx-1"></div>
+<button class="px-3 py-1.5 rounded-lg bg-white border border-outline-variant/30 font-label-sm text-label-sm text-on-surface hover:bg-surface-variant transition-colors shadow-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]">file_download</span>Ekspor</button>
+</div>
+<!-- Paper Canvas -->
+<div class="w-full max-w-[800px] min-h-[1056px] bg-white border border-[#e5e5ea] shadow-sm rounded-sm p-12 lg:p-16 relative mt-12 mb-12">
+<!-- Canvas Header (Hidden in actual print, visible in UI) -->
+<div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary-fixed/20 via-primary/10 to-primary-fixed/20"></div>
+<div class="max-w-[600px] mx-auto">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-8 text-center border-b border-outline-variant/20 pb-6 text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">Bab 4</h1>
+<div class="font-body-lg text-body-lg text-on-surface opacity-80" style="line-height: 1.85;">
+<!-- Placeholder content to simulate generated text -->
+<p class="mb-6 indent-8">
+                                The hum of the servers was the only sound in the sub-basement. Dr. Aris leaned closer to the terminal, the harsh blue light of the monitor casting long shadows across his face. The data stream cascading down the screen was erratic, anomalous. It wasn't just noise; it had a structure, a syntax he didn't recognize.
+                            </p>
+<p class="mb-6 indent-8">
+                                "It's compiling," he muttered, almost to himself, though the room was empty. The core temperature readings were rising steadily. The cooling system whined in protest.
+                            </p>
+<p class="mb-6 indent-8">
+                                He tapped a sequence onto the glass keyboard, trying to initiate a manual override. The system stalled, a tiny loading icon spinning endlessly in the corner of his vision. Then, a single line of text appeared, crisp and undeniable against the chaotic background code.
+                            </p>
+<!-- AI Generation Indicator -->
+<div class="my-8 flex items-center gap-4 py-4 border-y border-primary/20 bg-primary/5 px-4 rounded-lg">
+<div class="relative w-5 h-5">
+<div class="absolute inset-0 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+<div class="absolute inset-1 bg-primary/20 rounded-full animate-pulse"></div>
+</div>
+<p class="font-mono-sm text-mono-sm text-primary">Generating next sequence...</p>
+</div>
+</div>
+</div>
+<!-- Page Number -->
+<div class="absolute bottom-8 left-0 w-full text-center font-mono-sm text-mono-sm text-outline">
+                        - 12 -
+                    </div>
+</div>
+</section>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengaturan — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  .settings-section { margin-bottom: 24px; }
+  .api-input-wrap { position: relative; }
+  .api-input-wrap .form-input { padding-right: 44px; }
+  .toggle-show { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--color-on-surface-variant); display: flex; align-items: center; }
+  .connection-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--radius); font-size: 0.82rem; }
+  .connection-status.ok { background: rgba(45,106,79,0.1); color: var(--success); }
+  .connection-status.fail { background: var(--color-error-container); color: var(--color-error); }
+  .data-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .data-stat { background: var(--color-surface-low); border-radius: var(--radius); padding: 16px; text-align: center; border: 1px solid var(--color-outline-variant); }
+  .data-stat-value { font-size: 1.8rem; font-weight: 700; color: var(--color-primary); font-family: var(--font-mono); }
+  .data-stat-label { font-size: 0.75rem; color: var(--color-on-surface-variant); margin-top: 4px; }
+  .feature-list { display: flex; flex-direction: column; gap: 10px; }
+  .feature-item { display: flex; align-items: center; gap: 10px; font-size: 0.88rem; }
+  .feature-check { color: var(--success); display: flex; }
+  .danger-zone { border: 1px solid rgba(186,26,26,0.25); border-radius: var(--radius); padding: 16px; margin-top: 16px; background: rgba(186,26,26,0.03); }
+  .danger-zone-title { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-error); margin-bottom: 10px; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+  .section-icon { width: 36px; height: 36px; border-radius: var(--radius); background: var(--color-primary-fixed); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .section-icon .material-symbols-outlined { font-size: 18px; color: var(--color-primary); }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+    <div class="page-header">
+      <div class="breadcrumb"><a href="index.html">Dashboard</a><span class="breadcrumb-sep">›</span><span>Pengaturan</span></div>
+      <h1 class="page-title">
+        <span class="material-symbols-outlined">settings</span>
+        Pengaturan
+      </h1>
+    </div>
+
+    <div class="page-content">
+
+      <!-- API Config -->
+      <div class="card settings-section">
+        <div class="card-header">
+          <div class="flex items-center gap-12">
+            <div class="section-icon"><span class="material-symbols-outlined">key</span></div>
+            <h2 class="card-title">Konfigurasi API</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Anthropic API Key</label>
+            <div class="api-input-wrap">
+              <input class="form-input" id="api-key" type="password" placeholder="sk-ant-api03-…" />
+              <button class="toggle-show" onclick="toggleApiKeyVisibility()" title="Tampilkan/sembunyikan">
+                <span class="material-symbols-outlined" style="font-size:18px;">visibility</span>
+              </button>
+            </div>
+            <p class="form-hint">API key tersimpan di server. Dapatkan di <a href="https://console.anthropic.com" target="_blank" style="color:var(--color-primary);">console.anthropic.com</a></p>
+          </div>
+          <div class="flex gap-8 items-center flex-wrap">
+            <button class="btn btn-secondary" onclick="testKoneksi()">
+              <span class="spinner" id="test-spinner" style="display:none;"></span>
+              <span class="material-symbols-outlined">wifi</span>
+              Test Koneksi
+            </button>
+            <button class="btn btn-primary" onclick="simpanAPI()">
+              <span class="material-symbols-outlined">save</span>
+              Simpan
+            </button>
+            <div id="connection-status" style="display:none;" class="connection-status"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preferensi Default -->
+      <div class="card settings-section">
+        <div class="card-header">
+          <div class="flex items-center gap-12">
+            <div class="section-icon"><span class="material-symbols-outlined">tune</span></div>
+            <h2 class="card-title">Preferensi Default</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Gaya Bahasa Default</label>
+              <select class="form-select" id="pref-gaya-bahasa">
+                <option value="semi-formal">Semi-formal</option>
+                <option value="formal">Formal</option>
+                <option value="kasual">Kasual</option>
+                <option value="puitis">Puitis</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Gaya Penulisan Default</label>
+              <select class="form-select" id="pref-gaya-penulisan">
+                <option value="deskriptif">Deskriptif</option>
+                <option value="dialogis">Dialogis</option>
+                <option value="naratif">Naratif</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Genre Default</label>
+              <select class="form-select" id="pref-genre">
+                <option value="">Tidak ada default</option>
+                <option>Romance Kantoran (CEO/Boss)</option>
+                <option>Romance Kampus</option>
+                <option>Romance Islami (Halal)</option>
+                <option>Horor Kuntilanak</option>
+                <option>Thriller Misteri</option>
+                <option>Fantasi Kerajaan Nusantara</option>
+                <option>Teenlit SMA</option>
+                <option>Slice of Life Indonesia</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Jumlah Bab Default</label>
+              <input class="form-input" id="pref-jumlah-bab" type="number" value="5" min="1" max="50" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="simpanPreferensi()">
+            <span class="material-symbols-outlined">save</span>
+            Simpan Preferensi
+          </button>
+        </div>
+      </div>
+
+      <!-- Data Management -->
+      <div class="card settings-section">
+        <div class="card-header">
+          <div class="flex items-center gap-12">
+            <div class="section-icon"><span class="material-symbols-outlined">storage</span></div>
+            <h2 class="card-title">Manajemen Data</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="data-stats" id="data-stats">
+            <div class="data-stat">
+              <div class="data-stat-value" id="ds-novels">—</div>
+              <div class="data-stat-label">Total Novel</div>
+            </div>
+            <div class="data-stat">
+              <div class="data-stat-value" id="ds-seri">—</div>
+              <div class="data-stat-label">Total Seri</div>
+            </div>
+            <div class="data-stat">
+              <div class="data-stat-value" id="ds-library">—</div>
+              <div class="data-stat-label">Referensi RAG</div>
+            </div>
+          </div>
+
+          <div class="flex gap-8 flex-wrap mb-16">
+            <a href="/api/pengaturan/backup" class="btn btn-secondary" download="novelgen-backup.db">
+              <span class="material-symbols-outlined">download</span>
+              Backup Database
+            </a>
+            <button class="btn btn-secondary" onclick="bersihkanCache()">
+              <span class="material-symbols-outlined">cleaning_services</span>
+              Bersihkan Cache Editor
+            </button>
+          </div>
+
+          <div class="danger-zone">
+            <div class="danger-zone-title">
+              <span class="material-symbols-outlined" style="font-size:16px;">warning</span>
+              Zona Berbahaya
+            </div>
+            <p style="font-size:0.82rem; color:var(--color-on-surface-variant); margin-bottom:12px;">Reset akan menghapus SEMUA novel, seri, evaluasi, dan data editor. Tidak bisa dibatalkan.</p>
+            <button class="btn btn-danger" onclick="confirmReset()">
+              <span class="material-symbols-outlined">delete_forever</span>
+              Reset Semua Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tentang -->
+      <div class="card settings-section">
+        <div class="card-header">
+          <div class="flex items-center gap-12">
+            <div class="section-icon"><span class="material-symbols-outlined">info</span></div>
+            <h2 class="card-title">Tentang novelGENerator</h2>
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="font-family:var(--font-serif); font-size:1.4rem; font-weight:700; color:var(--color-primary); margin-bottom:4px;">novelGENerator v1.0.0</div>
+          <div style="font-size:0.82rem; color:var(--color-on-surface-variant); margin-bottom:24px;">Generator Novel AI Indonesia — Personal Local App</div>
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Generate novel lengkap dengan AI (Claude Sonnet)
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Tiru gaya penulis melalui DNA Extraction
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Perpustakaan RAG untuk konteks referensi
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Editor novel terintegrasi dengan AI assist
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Evaluasi otomatis (Gaya, Kualitas, Orisinalitas)
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Manajemen Seri Novel dengan Story Bible
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Ekspor ke Wattpad, KBM App, Google Docs, PDF
+            </div>
+            <div class="feature-item">
+              <span class="feature-check"><span class="material-symbols-outlined msf" style="font-size:18px; color:var(--success);">check_circle</span></span>
+              Sinopsis marketing & tag platform otomatis
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Reset Confirm Modal -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2>
+        <span class="material-symbols-outlined">warning</span>
+        Reset Semua Data?
+      </h2>
+      <button class="modal-close" onclick="closeModal('reset-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p style="color:var(--color-on-surface-variant); margin-bottom:16px;">Aksi ini akan menghapus SEMUA data secara permanen. Untuk konfirmasi, ketik <strong>HAPUS SEMUA</strong> di bawah.</p>
+      <input class="form-input" id="reset-confirm-input" type="text" placeholder="Ketik: HAPUS SEMUA" />
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('reset-modal')">Batal</button>
+      <button class="btn btn-danger" onclick="doReset()">Reset Sekarang</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('pengaturan');
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+  // Load settings
+  async function loadSettings() {
+    try {
+      const res = await fetch('/api/pengaturan');
+      const data = await res.json();
+      if (data.api_key) document.getElementById('api-key').value = data.api_key;
+      if (data.gaya_bahasa) document.getElementById('pref-gaya-bahasa').value = data.gaya_bahasa;
+      if (data.gaya_penulisan) document.getElementById('pref-gaya-penulisan').value = data.gaya_penulisan;
+      if (data.genre) document.getElementById('pref-genre').value = data.genre;
+      if (data.jumlah_bab) document.getElementById('pref-jumlah-bab').value = data.jumlah_bab;
+    } catch(err) {}
+  }
+
+  // Load data stats
+  async function loadDataStats() {
+    try {
+      const [novels, seri, library] = await Promise.all([
+        fetch('/api/editor/dokumen/daftar').then(r => r.json()),
+        fetch('/api/seri/daftar').then(r => r.json()),
+        fetch('/api/library').then(r => r.json()),
+      ]);
+      document.getElementById('ds-novels').textContent = (novels || []).length;
+      document.getElementById('ds-seri').textContent = (seri || []).length;
+      document.getElementById('ds-library').textContent = (library || []).length;
+    } catch(err) {}
+  }
+
+  function toggleApiKeyVisibility() {
+    const inp = document.getElementById('api-key');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+  }
+
+  async function testKoneksi() {
+    const apiKey = document.getElementById('api-key').value.trim();
+    const btn = document.querySelector('[onclick="testKoneksi()"]');
+    btn.disabled = true;
+    document.getElementById('test-spinner').style.display = '';
+    document.getElementById('connection-status').style.display = 'none';
+    try {
+      const res = await fetch('/api/pengaturan/test-koneksi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey })
+      });
+      const data = await res.json();
+      const statusEl = document.getElementById('connection-status');
+      statusEl.style.display = 'inline-flex';
+      if (data.ok) {
+        statusEl.className = 'connection-status ok';
+        statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Terhubung';
+        toast.success('Koneksi API berhasil');
+      } else {
+        statusEl.className = 'connection-status fail';
+        statusEl.innerHTML = '<span class="material-symbols-outlined" style="font-size:16px;">error</span> Gagal: ' + (data.message || 'Error');
+        toast.error('Koneksi gagal: ' + data.message);
+      }
+    } catch(err) {
+      toast.error('Gagal test koneksi: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('test-spinner').style.display = 'none';
+    }
+  }
+
+  async function simpanAPI() {
+    const apiKey = document.getElementById('api-key').value.trim();
+    try {
+      const res = await fetch('/api/pengaturan', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey })
+      });
+      if (res.ok) toast.success('API key disimpan');
+      else toast.error('Gagal menyimpan');
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  async function simpanPreferensi() {
+    try {
+      const body = {
+        gaya_bahasa: document.getElementById('pref-gaya-bahasa').value,
+        gaya_penulisan: document.getElementById('pref-gaya-penulisan').value,
+        genre: document.getElementById('pref-genre').value,
+        jumlah_bab: document.getElementById('pref-jumlah-bab').value,
+      };
+      const res = await fetch('/api/pengaturan', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (res.ok) toast.success('Preferensi disimpan');
+      else toast.error('Gagal menyimpan');
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  async function bersihkanCache() {
+    try {
+      if (window.indexedDB) {
+        const req = window.indexedDB.deleteDatabase('novelgen-editor');
+        req.onsuccess = () => toast.success('Cache editor berhasil dibersihkan');
+        req.onerror = () => toast.error('Gagal membersihkan cache');
+      } else {
+        toast.info('IndexedDB tidak tersedia');
+      }
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  function confirmReset() {
+    document.getElementById('reset-confirm-input').value = '';
+    openModal('reset-modal');
+  }
+
+  async function doReset() {
+    const val = document.getElementById('reset-confirm-input').value.trim();
+    if (val !== 'HAPUS SEMUA') {
+      toast.error('Ketik "HAPUS SEMUA" dengan tepat untuk mengonfirmasi');
+      return;
+    }
+    toast.warn('Fitur reset penuh memerlukan restart server. Hapus database manual: database/novels.db');
+    closeModal('reset-modal');
+  }
+
+  loadSettings();
+  loadDataStats();
+</script>
+</body>
+</html>

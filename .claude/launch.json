@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "novelgenerator",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "project-lama-backup/novel-generator", "start"],
+      "port": 3000
+    }
+  ]
+}

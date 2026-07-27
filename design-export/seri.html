@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seri Novel — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  .seri-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .seri-card { background: var(--color-surface-lowest); border: 1px solid var(--color-outline-variant); border-radius: var(--radius-lg); padding: 18px; cursor: pointer; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: var(--shadow-soft); }
+  .seri-card:hover { border-color: var(--color-primary); box-shadow: var(--shadow-md); }
+  .seri-card.selected { border-color: var(--color-primary); background: var(--color-primary-fixed); }
+  .seri-card-title { font-family: var(--font-serif); font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: var(--color-on-surface); }
+  .seri-card-meta { font-size: 0.78rem; color: var(--color-on-surface-variant); margin-bottom: 10px; }
+  .jilid-list { display: flex; flex-direction: column; gap: 8px; }
+  .jilid-item { background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+  .jilid-num { font-size: 0.8rem; color: var(--color-on-surface-variant); min-width: 50px; font-weight: 600; font-family: var(--font-mono); }
+  .jilid-title { flex: 1; font-size: 0.9rem; }
+  .jilid-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .sb-section { margin-bottom: 20px; }
+  .sb-section-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--color-surface-low); border-radius: var(--radius) var(--radius) 0 0; border: 1px solid var(--color-outline-variant); }
+  .sb-section-title { font-size: 0.88rem; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .sb-entries { border: 1px solid var(--color-outline-variant); border-top: none; border-radius: 0 0 var(--radius) var(--radius); overflow: hidden; background: var(--color-surface-lowest); }
+  .sb-entry { padding: 12px 14px; border-bottom: 1px solid var(--color-outline-variant); display: flex; gap: 10px; align-items: flex-start; }
+  .sb-entry:last-child { border-bottom: none; }
+  .sb-entry-content { flex: 1; }
+  .sb-entry-name { font-size: 0.88rem; font-weight: 600; }
+  .sb-entry-desc { font-size: 0.8rem; color: var(--color-on-surface-variant); margin-top: 3px; }
+  .konsistensi-result { background: var(--color-surface-low); border: 1px solid var(--color-outline-variant); border-radius: var(--radius); padding: 16px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+    <div class="page-header">
+      <div class="breadcrumb"><a href="index.html">Dashboard</a><span class="breadcrumb-sep">›</span><span>Seri Novel</span></div>
+      <div class="flex items-center justify-between">
+        <h1 class="page-title">
+          <span class="material-symbols-outlined">collections_bookmark</span>
+          Seri Novel
+        </h1>
+        <button class="btn btn-primary" onclick="openModal('create-seri-modal')">
+          <span class="material-symbols-outlined">add</span> Buat Seri Baru
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <!-- Seri grid -->
+      <div id="seri-grid" class="seri-grid">
+        <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem; margin-bottom:8px;"></div><div class="skeleton skeleton-text w-60"></div></div>
+        <div class="skeleton-card"><div class="skeleton skeleton-text w-80" style="height:1.2rem; margin-bottom:8px;"></div><div class="skeleton skeleton-text w-60"></div></div>
+      </div>
+
+      <!-- Detail panel (shown when seri selected) -->
+      <div id="seri-detail" style="display:none;">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title" id="detail-title"></h2>
+              <div style="font-size:0.8rem; color:var(--color-on-surface-variant); margin-top:2px;" id="detail-meta"></div>
+            </div>
+            <div class="flex gap-8">
+              <button class="btn btn-ghost btn-sm" onclick="editSeri()">
+                <span class="material-symbols-outlined">edit</span> Edit
+              </button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteSeri()">
+                <span class="material-symbols-outlined">delete</span>
+              </button>
+              <button class="btn btn-ghost btn-sm" onclick="closeSeriDetail()">
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="tab-bar">
+              <button class="tab-btn active" onclick="switchDetailTab('jilid', this)">
+                <span class="material-symbols-outlined">menu_book</span> Jilid
+              </button>
+              <button class="tab-btn" onclick="switchDetailTab('story-bible', this)">
+                <span class="material-symbols-outlined">auto_stories</span> Story Bible
+              </button>
+              <button class="tab-btn" onclick="switchDetailTab('konsistensi', this)">
+                <span class="material-symbols-outlined">fact_check</span> Konsistensi
+              </button>
+            </div>
+
+            <!-- Jilid Tab -->
+            <div id="dtab-jilid" class="tab-panel active">
+              <div id="jilid-list" class="jilid-list"></div>
+              <button class="btn btn-secondary mt-16" onclick="openModal('add-jilid-modal')">
+                <span class="material-symbols-outlined">add</span> Tambah Jilid
+              </button>
+            </div>
+
+            <!-- Story Bible Tab -->
+            <div id="dtab-story-bible" class="tab-panel">
+              <div id="sb-content"></div>
+            </div>
+
+            <!-- Konsistensi Tab -->
+            <div id="dtab-konsistensi" class="tab-panel">
+              <p style="color:var(--color-on-surface-variant); font-size:0.88rem; margin-bottom:16px;">
+                Analisis AI akan memeriksa konsistensi karakter, plot, dan elemen cerita antar jilid.
+              </p>
+              <button class="btn btn-primary" id="btn-run-konsistensi" onclick="runKonsistensi()">
+                <span class="spinner" id="konsistensi-spinner" style="display:none;"></span>
+                <span class="material-symbols-outlined">fact_check</span>
+                Jalankan Cek Konsistensi
+              </button>
+              <div id="konsistensi-result" class="konsistensi-result" style="display:none;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create Seri Modal -->
+<div class="modal-overlay" id="create-seri-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>
+        <span class="material-symbols-outlined">collections_bookmark</span>
+        Buat Seri Baru
+      </h2>
+      <button class="modal-close" onclick="closeModal('create-seri-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Judul Seri *</label>
+        <input class="form-input" id="cs-judul" type="text" placeholder="cth. Trilogi Nusantara" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deskripsi</label>
+        <textarea class="form-textarea" id="cs-deskripsi" placeholder="Sinopsis singkat seri novel…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Genre</label>
+        <select class="form-select" id="cs-genre">
+          <option value="">Pilih genre…</option>
+          <option>Romance Kantoran</option>
+          <option>Romance Islami</option>
+          <option>Fantasi Kerajaan Nusantara</option>
+          <option>Thriller Misteri</option>
+          <option>Drama Keluarga</option>
+          <option>Lainnya</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('create-seri-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="createSeri()">Buat Seri</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Jilid Modal -->
+<div class="modal-overlay" id="add-jilid-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>
+        <span class="material-symbols-outlined">add</span>
+        Tambah Jilid
+      </h2>
+      <button class="modal-close" onclick="closeModal('add-jilid-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nomor Jilid *</label>
+          <input class="form-input" id="aj-nomor" type="number" min="1" value="1" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Judul Jilid *</label>
+          <input class="form-input" id="aj-judul" type="text" placeholder="cth. Langit Kelabu" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deskripsi (opsional)</label>
+        <textarea class="form-textarea" id="aj-deskripsi" style="min-height:80px;" placeholder="Ringkasan cerita jilid ini…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-jilid-modal')">Batal</button>
+      <button class="btn btn-primary" onclick="addJilid()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Story Bible Entry Modal -->
+<div class="modal-overlay" id="add-sb-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="sb-modal-title">
+        <span class="material-symbols-outlined">add</span>
+        Tambah Entry
+      </h2>
+      <button class="modal-close" onclick="closeModal('add-sb-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Tipe *</label>
+        <select class="form-select" id="sb-tipe">
+          <option value="karakter">Karakter</option>
+          <option value="lokasi">Lokasi</option>
+          <option value="lore">Lore/Dunia</option>
+          <option value="timeline">Timeline</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Nama *</label>
+        <input class="form-input" id="sb-nama" type="text" placeholder="cth. Arya Prasetya (karakter), Kerajaan Mataram (lokasi)…" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deskripsi</label>
+        <textarea class="form-textarea" id="sb-deskripsi" placeholder="Detail tentang karakter/lokasi/lore ini…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('add-sb-modal')">Batal</button>
+      <button class="btn btn-primary" id="btn-sb-save" onclick="saveSBEntry()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <h2 id="del-title">Hapus?</h2>
+      <button class="modal-close" onclick="closeModal('delete-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body"><p style="color:var(--color-on-surface-variant);" id="del-msg">Aksi ini tidak bisa dibatalkan.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('delete-modal')">Batal</button>
+      <button class="btn btn-danger" id="btn-del-confirm">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('seri');
+
+  let currentSeri = null;
+  let editingSBEntry = null;
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+  const params = new URLSearchParams(location.search);
+  const initSeriId = params.get('seri_id');
+
+  // ── Load Seri List ──────────────────────────────────────
+
+  async function loadSeriList() {
+    try {
+      const res = await fetch('/api/seri/daftar');
+      const data = await res.json();
+      const grid = document.getElementById('seri-grid');
+      if (!data || data.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size:48px;">collections_bookmark</span></div>
+            <div class="empty-state-title">Belum ada seri novel</div>
+            <div class="empty-state-desc">Buat seri untuk mengelola novel multi-jilid</div>
+            <button class="btn btn-primary empty-state-cta" onclick="openModal('create-seri-modal')">
+              <span class="material-symbols-outlined">add</span> Buat Seri Pertama
+            </button>
+          </div>
+        `;
+        return;
+      }
+      grid.innerHTML = data.map(s => `
+        <div class="seri-card${currentSeri && currentSeri.id === s.id ? ' selected' : ''}" id="sc-${s.id}" onclick="selectSeri(${s.id})">
+          <div class="seri-card-title">${s.judul}</div>
+          <div class="seri-card-meta">${s.genre ? s.genre + ' · ' : ''}${s.jumlah_jilid || 0} jilid</div>
+          <div class="flex items-center justify-between">
+            <span class="badge ${s.status==='aktif'?'badge-success':'badge-muted'}">${s.status}</span>
+            <span style="font-size:0.75rem; color:var(--color-on-surface-variant);">${formatTgl(s.dibuat_pada)}</span>
+          </div>
+        </div>
+      `).join('');
+
+      if (initSeriId) selectSeri(parseInt(initSeriId));
+    } catch(err) {
+      toast.error('Gagal memuat seri: ' + err.message);
+    }
+  }
+
+  // ── Create Seri ─────────────────────────────────────────
+
+  async function createSeri() {
+    const judul = document.getElementById('cs-judul').value.trim();
+    if (!judul) return toast.error('Judul wajib diisi');
+    try {
+      const res = await fetch('/api/seri/buat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          judul,
+          deskripsi: document.getElementById('cs-deskripsi').value,
+          genre: document.getElementById('cs-genre').value,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal');
+      toast.success('Seri berhasil dibuat');
+      closeModal('create-seri-modal');
+      document.getElementById('cs-judul').value = '';
+      document.getElementById('cs-deskripsi').value = '';
+      await loadSeriList();
+      selectSeri(data.id);
+    } catch(err) {
+      toast.error('Gagal: ' + err.message);
+    }
+  }
+
+  // ── Select / Show Seri Detail ─────────────────────────
+
+  async function selectSeri(id) {
+    try {
+      const res = await fetch('/api/seri/' + id);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Tidak ditemukan');
+      currentSeri = data;
+
+      document.querySelectorAll('.seri-card').forEach(c => c.classList.remove('selected'));
+      const sc = document.getElementById('sc-' + id);
+      if (sc) sc.classList.add('selected');
+
+      document.getElementById('detail-title').textContent = data.judul;
+      document.getElementById('detail-meta').textContent = [data.genre, data.deskripsi].filter(Boolean).join(' · ').substring(0, 80);
+      document.getElementById('seri-detail').style.display = '';
+      document.getElementById('seri-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      renderJilidList(data.jilid || []);
+    } catch(err) {
+      toast.error('Gagal memuat detail seri: ' + err.message);
+    }
+  }
+
+  function closeSeriDetail() {
+    currentSeri = null;
+    document.getElementById('seri-detail').style.display = 'none';
+    document.querySelectorAll('.seri-card').forEach(c => c.classList.remove('selected'));
+  }
+
+  // ── Jilid ───────────────────────────────────────────────
+
+  function renderJilidList(jilid) {
+    const list = document.getElementById('jilid-list');
+    if (!jilid || jilid.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state" style="padding:30px 0;">
+          <div class="empty-state-icon"><span class="material-symbols-outlined" style="font-size:40px;">menu_book</span></div>
+          <div class="empty-state-title">Belum ada jilid</div>
+          <div class="empty-state-desc">Tambah jilid pertama untuk seri ini</div>
+        </div>
+      `;
+      return;
+    }
+
+    const statusLabels = { belum_dimulai: 'Belum Dimulai', sedang_ditulis: 'Sedang Ditulis', selesai: 'Selesai' };
+    const statusBadge = { belum_dimulai: 'badge-muted', sedang_ditulis: 'badge-info', selesai: 'badge-success' };
+
+    list.innerHTML = jilid.map(j => {
+      let actions = '';
+      if (j.status === 'belum_dimulai') {
+        actions = `<button class="btn btn-primary btn-sm" onclick="mulaiFulis(${j.id})"><span class="material-symbols-outlined">play_arrow</span> Mulai Tulis</button>`;
+      } else if (j.status === 'sedang_ditulis') {
+        actions = `<button class="btn btn-primary btn-sm" onclick="lanjutkanTulis(${j.id})"><span class="material-symbols-outlined">edit</span> Lanjutkan</button>`;
+      } else if (j.status === 'selesai' && j.novel_id) {
+        actions = `
+          <button class="btn btn-secondary btn-sm" onclick="bukaEditor('${j.novel_id}')"><span class="material-symbols-outlined">menu_book</span></button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='evaluasi.html?novel_id=${j.novel_id}'"><span class="material-symbols-outlined">analytics</span></button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='ekspor.html?novel_id=${j.novel_id}'"><span class="material-symbols-outlined">upload_file</span></button>
+        `;
+      } else {
+        actions = `<button class="btn btn-primary btn-sm" onclick="mulaiFulis(${j.id})"><span class="material-symbols-outlined">play_arrow</span> Mulai Tulis</button>`;
+      }
+
+      return `
+        <div class="jilid-item">
+          <div class="jilid-num">Jilid ${j.nomor}</div>
+          <div class="jilid-title">
+            <div>${j.judul}</div>
+            ${j.deskripsi ? `<div style="font-size:0.75rem; color:var(--color-on-surface-variant); margin-top:2px;">${j.deskripsi.substring(0,60)}…</div>` : ''}
+          </div>
+          <span class="badge ${statusBadge[j.status]||'badge-muted'}">${statusLabels[j.status]||j.status}</span>
+          <div class="jilid-actions">
+            ${actions}
+            <button class="btn btn-danger btn-sm" onclick="confirmDelJilid(${j.id})">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function mulaiFulis(jilidId) {
+    if (!currentSeri) return;
+    window.location.href = `generate.html?seri_id=${currentSeri.id}&jilid_id=${jilidId}`;
+  }
+
+  function lanjutkanTulis(jilidId) {
+    if (!currentSeri) return;
+    window.location.href = `generate.html?seri_id=${currentSeri.id}&jilid_id=${jilidId}`;
+  }
+
+  async function bukaEditor(novelId) {
+    try {
+      // Find dokumen for this novel_id
+      const res = await fetch('/api/editor/dokumen/daftar');
+      const docs = await res.json();
+      const dok = docs.find(d => String(d.novel_id) === String(novelId));
+      if (dok) window.location.href = 'editor.html?id=' + dok.id;
+      else toast.error('Dokumen editor tidak ditemukan');
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  async function addJilid() {
+    if (!currentSeri) return;
+    const judul = document.getElementById('aj-judul').value.trim();
+    if (!judul) return toast.error('Judul jilid wajib diisi');
+    try {
+      const res = await fetch(`/api/seri/${currentSeri.id}/jilid/tambah`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nomor: parseInt(document.getElementById('aj-nomor').value) || 1,
+          judul,
+          deskripsi: document.getElementById('aj-deskripsi').value,
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal');
+      toast.success('Jilid berhasil ditambahkan');
+      closeModal('add-jilid-modal');
+      document.getElementById('aj-judul').value = '';
+      document.getElementById('aj-deskripsi').value = '';
+      await selectSeri(currentSeri.id);
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  function confirmDelJilid(jilidId) {
+    document.getElementById('del-title').textContent = 'Hapus Jilid?';
+    document.getElementById('del-msg').textContent = 'Jilid ini akan dihapus permanen.';
+    document.getElementById('btn-del-confirm').onclick = async () => {
+      try {
+        await fetch(`/api/seri/${currentSeri.id}/jilid/${jilidId}`, { method: 'DELETE' });
+        toast.success('Jilid dihapus');
+        closeModal('delete-modal');
+        await selectSeri(currentSeri.id);
+      } catch(err) { toast.error('Gagal: ' + err.message); }
+    };
+    openModal('delete-modal');
+  }
+
+  // ── Story Bible ─────────────────────────────────────────
+
+  function switchDetailTab(tab, btn) {
+    document.querySelectorAll('#seri-detail .tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('#seri-detail .tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('dtab-' + tab).classList.add('active');
+    btn.classList.add('active');
+    if (tab === 'story-bible') loadStoryBible();
+  }
+
+  async function loadStoryBible() {
+    if (!currentSeri) return;
+    const container = document.getElementById('sb-content');
+    container.innerHTML = '<div class="skeleton skeleton-text w-80" style="height:1.2rem;"></div>';
+    try {
+      const res = await fetch(`/api/seri/${currentSeri.id}/story-bible`);
+      const data = await res.json();
+
+      const groups = { karakter: [], lokasi: [], lore: [], timeline: [] };
+      (data || []).forEach(e => { if (groups[e.tipe]) groups[e.tipe].push(e); });
+
+      const typeLabels = {
+        karakter: { label: 'Karakter', icon: 'person' },
+        lokasi: { label: 'Lokasi', icon: 'location_on' },
+        lore: { label: 'Lore/Dunia', icon: 'auto_awesome' },
+        timeline: { label: 'Timeline', icon: 'schedule' }
+      };
+      container.innerHTML = Object.entries(typeLabels).map(([type, info]) => `
+        <div class="sb-section">
+          <div class="sb-section-header">
+            <span class="sb-section-title">
+              <span class="material-symbols-outlined" style="font-size:16px;">${info.icon}</span>
+              ${info.label} (${groups[type].length})
+            </span>
+            <button class="btn btn-secondary btn-sm" onclick="openAddSBModal('${type}')">
+              <span class="material-symbols-outlined">add</span> Tambah
+            </button>
+          </div>
+          <div class="sb-entries" id="sbe-${type}">
+            ${groups[type].length === 0
+              ? `<div style="padding:12px 14px; color:var(--color-on-surface-variant); font-size:0.82rem;">Belum ada entri.</div>`
+              : groups[type].map(e => `
+                <div class="sb-entry">
+                  <div class="sb-entry-content">
+                    <div class="sb-entry-name">${e.nama}</div>
+                    ${e.deskripsi ? `<div class="sb-entry-desc">${e.deskripsi}</div>` : ''}
+                  </div>
+                  <div class="flex gap-8">
+                    <button class="btn btn-ghost btn-sm" onclick="editSBEntry(${e.id}, '${e.tipe}', '${(e.nama||'').replace(/'/g,'')}', '${(e.deskripsi||'').replace(/'/g,'').replace(/\n/g,' ')}')">
+                      <span class="material-symbols-outlined">edit</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteSBEntry(${e.id})">
+                      <span class="material-symbols-outlined">delete</span>
+                    </button>
+                  </div>
+                </div>
+              `).join('')
+            }
+          </div>
+        </div>
+      `).join('');
+    } catch(err) {
+      container.innerHTML = '<p style="color:var(--color-error);">Gagal memuat Story Bible</p>';
+    }
+  }
+
+  function openAddSBModal(type) {
+    editingSBEntry = null;
+    document.getElementById('sb-modal-title').innerHTML = `<span class="material-symbols-outlined">add</span> Tambah ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+    document.getElementById('sb-tipe').value = type;
+    document.getElementById('sb-nama').value = '';
+    document.getElementById('sb-deskripsi').value = '';
+    document.getElementById('btn-sb-save').textContent = 'Simpan';
+    openModal('add-sb-modal');
+  }
+
+  function editSBEntry(id, tipe, nama, deskripsi) {
+    editingSBEntry = id;
+    document.getElementById('sb-modal-title').innerHTML = `<span class="material-symbols-outlined">edit</span> Edit Entry`;
+    document.getElementById('sb-tipe').value = tipe;
+    document.getElementById('sb-nama').value = nama;
+    document.getElementById('sb-deskripsi').value = deskripsi;
+    document.getElementById('btn-sb-save').textContent = 'Update';
+    openModal('add-sb-modal');
+  }
+
+  async function saveSBEntry() {
+    if (!currentSeri) return;
+    const nama = document.getElementById('sb-nama').value.trim();
+    const tipe = document.getElementById('sb-tipe').value;
+    if (!nama) return toast.error('Nama wajib diisi');
+    try {
+      const body = { tipe, nama, deskripsi: document.getElementById('sb-deskripsi').value };
+      let url = `/api/seri/${currentSeri.id}/story-bible`;
+      let method = 'POST';
+      if (editingSBEntry) {
+        url += '/' + editingSBEntry;
+        method = 'PUT';
+      }
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (!res.ok) throw new Error('Gagal menyimpan');
+      toast.success(editingSBEntry ? 'Entry diperbarui' : 'Entry ditambahkan');
+      closeModal('add-sb-modal');
+      loadStoryBible();
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  async function deleteSBEntry(entryId) {
+    if (!currentSeri) return;
+    if (!confirm('Hapus entri ini?')) return;
+    try {
+      await fetch(`/api/seri/${currentSeri.id}/story-bible/${entryId}`, { method: 'DELETE' });
+      toast.success('Entry dihapus');
+      loadStoryBible();
+    } catch(err) { toast.error('Gagal: ' + err.message); }
+  }
+
+  // ── Konsistensi ─────────────────────────────────────────
+
+  async function runKonsistensi() {
+    if (!currentSeri) return;
+    const btn = document.getElementById('btn-run-konsistensi');
+    btn.disabled = true;
+    document.getElementById('konsistensi-spinner').style.display = '';
+    document.getElementById('konsistensi-result').style.display = 'none';
+    toast.info('Menganalisis konsistensi seri…');
+    try {
+      const res = await fetch(`/api/seri/${currentSeri.id}/konsistensi`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Analisis gagal');
+      const resultDiv = document.getElementById('konsistensi-result');
+      resultDiv.style.display = '';
+      resultDiv.innerHTML = `
+        <div class="flex items-center gap-12 mb-16">
+          <div style="font-size:1.5rem; font-weight:700; font-family:var(--font-mono); color:${data.skor >= 80 ? 'var(--success)' : data.skor >= 60 ? 'var(--warning)' : 'var(--color-error)'};">${data.skor}/100</div>
+          <div style="font-size:0.88rem; color:var(--color-on-surface-variant);">${data.ringkasan || ''}</div>
+        </div>
+        ${data.masalah && data.masalah.length > 0 ? `
+          <div style="margin-bottom:12px;">
+            <div style="font-size:0.8rem; text-transform:uppercase; color:var(--color-error); margin-bottom:8px; font-weight:600; display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">warning</span> Masalah Ditemukan</div>
+            ${data.masalah.map(m => `<div style="padding:6px 10px; background:var(--color-error-container); border-left:3px solid var(--color-error); border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-bottom:4px; font-size:0.85rem;">${m}</div>`).join('')}
+          </div>
+        ` : `<div style="color:var(--success); font-size:0.88rem; margin-bottom:12px; display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">check_circle</span> Tidak ada masalah ditemukan</div>`}
+        ${data.saran && data.saran.length > 0 ? `
+          <div>
+            <div style="font-size:0.8rem; text-transform:uppercase; color:var(--info); margin-bottom:8px; font-weight:600; display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:16px;">lightbulb</span> Saran</div>
+            ${data.saran.map(s => `<div style="padding:6px 10px; background:rgba(29,78,216,0.08); border-left:3px solid var(--info); border-radius:0 var(--radius-sm) var(--radius-sm) 0; margin-bottom:4px; font-size:0.85rem;">${s}</div>`).join('')}
+          </div>
+        ` : ''}
+      `;
+      toast.success('Analisis konsistensi selesai');
+    } catch(err) {
+      toast.error('Gagal analisis: ' + err.message);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('konsistensi-spinner').style.display = 'none';
+    }
+  }
+
+  // ── Edit / Delete Seri ──────────────────────────────────
+
+  function editSeri() {
+    if (!currentSeri) return;
+    document.getElementById('cs-judul').value = currentSeri.judul;
+    document.getElementById('cs-deskripsi').value = currentSeri.deskripsi || '';
+    document.getElementById('cs-genre').value = currentSeri.genre || '';
+    openModal('create-seri-modal');
+  }
+
+  function confirmDeleteSeri() {
+    if (!currentSeri) return;
+    document.getElementById('del-title').textContent = 'Hapus Seri?';
+    document.getElementById('del-msg').textContent = `Hapus "${currentSeri.judul}" beserta semua jilid dan story bible? Aksi ini tidak bisa dibatalkan.`;
+    document.getElementById('btn-del-confirm').onclick = async () => {
+      try {
+        await fetch('/api/seri/' + currentSeri.id, { method: 'DELETE' });
+        toast.success('Seri dihapus');
+        closeModal('delete-modal');
+        closeSeriDetail();
+        loadSeriList();
+      } catch(err) { toast.error('Gagal: ' + err.message); }
+    };
+    openModal('delete-modal');
+  }
+
+  function formatTgl(dt) {
+    if (!dt) return '';
+    return new Date(dt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  loadSeriList();
+</script>
+</body>
+</html>

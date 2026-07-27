@@ -1,0 +1,37 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+#
+# Cara pakai: hubungkan repo ini di dashboard Render (New > Blueprint), Render
+# akan otomatis membaca file ini. Variabel dengan "sync: false" WAJIB diisi
+# manual di dashboard Render setelah service dibuat — nilainya rahasia,
+# sengaja tidak ditaruh di file ini yang ikut masuk repo.
+services:
+  - type: web
+    name: novelgenerator
+    runtime: node
+    plan: free
+    rootDir: project-lama-backup/novel-generator
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /login.html
+    envVars:
+      # ── Wajib diisi manual di dashboard Render ──
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: APP_LOGIN_PASSWORD
+        sync: false
+      # OpenRouter opsional — hanya perlu diisi kalau memakai model gratis
+      # OpenRouter selain Anthropic langsung.
+      - key: OPENROUTER_API_KEY
+        sync: false
+      # ── Nilai default, boleh diubah di dashboard kapan saja ──
+      - key: MAX_DAILY_API_CALLS
+        value: "40"
+      - key: MAX_TOTAL_BUDGET_USD
+        value: "3.50"
+      # PORT TIDAK didaftarkan di sini — Render menyuntikkan port-nya sendiri
+      # secara otomatis lewat env var PORT, dan server.js sudah membaca
+      # process.env.PORT (lihat baris "const PORT = process.env.PORT || 3000").

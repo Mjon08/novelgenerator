@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tulis — novelGENerator Studio</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&family=JetBrains+Mono:wght@400&family=Merriweather:wght@400;700&family=Lora:wght@400;700&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/@phosphor-icons/web"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="shared/nav.js"></script>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface-dim":"#dadadb","outline-variant":"#c1c6d7","surface-container-high":"#e8e8e9","surface-container-highest":"#e2e2e3","surface-container-lowest":"#ffffff","surface":"#f9f9fa","surface-variant":"#e2e2e3","on-surface-variant":"#414755","on-surface":"#1a1c1d","surface-container-low":"#f3f3f4","surface-container":"#eeeeef","outline":"#717786","primary":"#0058bc","on-primary":"#ffffff","primary-container":"#0070eb","secondary":"#4a47d2","tertiary":"#9e3d00","error":"#ba1a1a","inverse-surface":"#2f3132","inverse-on-surface":"#f0f1f2"}}}}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#d4d4d8;font-family:'Plus Jakarta Sans',system-ui,sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column}
+
+/* ── Title Bar ── */
+.title-bar{height:36px;background:#1e3a5f;display:flex;align-items:center;justify-content:space-between;padding:0 8px;flex-shrink:0;z-index:50}
+.title-bar *{color:#fff;font-size:12px}
+.title-bar button{background:none;border:none;cursor:pointer;padding:4px 6px;border-radius:4px;color:#c8d6e5;display:flex;align-items:center;gap:3px}
+.title-bar button:hover{background:rgba(255,255,255,0.15);color:#fff}
+.title-bar .doc-name{background:none;border:none;color:#fff;font-size:13px;font-weight:600;text-align:center;outline:none;padding:2px 8px;border-radius:4px;min-width:120px}
+.title-bar .doc-name:focus{background:rgba(255,255,255,0.2)}
+.tb-sep{width:1px;height:16px;background:rgba(255,255,255,0.2);margin:0 2px}
+
+/* ── Ribbon ── */
+.ribbon-tabs{height:30px;background:#2b5a8c;display:flex;align-items:end;padding:0 6px;flex-shrink:0;z-index:49;gap:0}
+.ribbon-tabs button{height:26px;padding:0 14px;font-size:11.5px;font-weight:500;color:#a8c4e0;border:none;background:none;cursor:pointer;border-radius:6px 6px 0 0;transition:all .15s}
+.ribbon-tabs button:hover{color:#fff;background:rgba(255,255,255,0.08)}
+.ribbon-tabs button.active{color:#1a1c1d;background:#f0f0f1;font-weight:600}
+
+.ribbon-panel{background:#f0f0f1;border-bottom:1px solid #c8c8d0;padding:6px 10px;display:none;flex-shrink:0;z-index:48;min-height:76px;align-items:stretch;gap:2px}
+.ribbon-panel.active{display:flex}
+.ribbon-group{display:flex;align-items:center;gap:3px;padding:0 8px;border-right:1px solid #d0d0d6;position:relative}
+.ribbon-group:last-child{border-right:none}
+.ribbon-group-label{position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);font-size:9px;color:#717786;white-space:nowrap;letter-spacing:.03em}
+
+.rb-btn{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;border-radius:4px;color:#3a3f4d;font-size:14px;transition:all .12s}
+.rb-btn:hover{background:#dde1ea}
+.rb-btn.active{background:#c5d3e8;color:#0058bc}
+.rb-btn i{font-size:17px}
+.rb-btn-lg{width:auto;height:auto;flex-direction:column;padding:4px 8px;gap:2px;font-size:10px}
+.rb-btn-lg i{font-size:22px}
+
+.rb-select{height:26px;border:1px solid #c1c6d7;border-radius:4px;padding:0 4px;font-size:12px;background:#fff;color:#1a1c1d;cursor:pointer;outline:none}
+.rb-select:focus{border-color:#0058bc;box-shadow:0 0 0 2px rgba(0,88,188,0.15)}
+.font-select{width:140px}
+.size-select{width:52px}
+
+.rb-color-btn{width:28px;height:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:none;background:none;cursor:pointer;border-radius:4px;position:relative}
+.rb-color-btn:hover{background:#dde1ea}
+.rb-color-btn .bar{width:16px;height:3px;border-radius:1px;margin-top:1px}
+.rb-color-btn input[type=color]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* Style Presets */
+.style-btn{padding:3px 10px;border:1px solid #c1c6d7;border-radius:4px;font-size:11px;background:#fff;cursor:pointer;white-space:nowrap;transition:all .12s;color:#3a3f4d}
+.style-btn:hover{border-color:#0058bc;color:#0058bc}
+.style-btn.active{border-color:#0058bc;background:#dbeafe;color:#0058bc}
+
+/* ── Paper Canvas Container ── */
+.paper-container{flex:1;overflow-y:auto;overflow-x:auto;background:#a8a8b0;display:flex;justify-content:center;padding:20px 0}
+
+.paper-page{
+  width:794px;min-height:1123px;
+  background:#fff;color:#000;
+  box-shadow:0 2px 12px rgba(0,0,0,0.18);
+  margin:20px auto;
+  outline:none;
+  font-family:'Calibri','Segoe UI',sans-serif;
+  font-size:11pt;line-height:1.5;
+  position:relative;
+  overflow-wrap:break-word;word-wrap:break-word;
+  user-select:text;-webkit-user-select:text;
+  cursor:text;caret-color:#000;
+  white-space:pre-wrap;
+}
+.paper-page:focus{box-shadow:0 2px 12px rgba(0,0,0,0.18)}
+.paper-page::selection{background:#3390ff;color:#fff}
+.paper-page *::selection{background:#3390ff;color:#fff}
+.paper-page h1{font-size:24pt;font-weight:700;margin:0 0 12px}
+.paper-page h2{font-size:18pt;font-weight:700;margin:0 0 8px}
+.paper-page h3{font-size:14pt;font-weight:700;margin:0 0 6px}
+.paper-page p{margin:0 0 8px}
+.paper-page ul,.paper-page ol{margin:0 0 8px;padding-left:24px}
+.paper-page table{border-collapse:collapse;width:100%}
+.paper-page td,.paper-page th{border:1px solid #999;padding:4px 8px}
+
+/* ── Status Bar ── */
+.status-bar{height:26px;background:#f0f0f1;border-top:1px solid #c8c8d0;display:flex;align-items:center;justify-content:space-between;padding:0 12px;flex-shrink:0;z-index:48}
+.status-bar span{font-size:11px;color:#5a5f6d}
+.status-bar .status-group{display:flex;align-items:center;gap:12px}
+.zoom-range{width:80px;height:3px;cursor:pointer;accent-color:#0058bc}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ── Modals ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(4px);z-index:80;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.2);padding:24px;width:90%;max-width:480px;max-height:80vh;overflow-y:auto}
+.modal-box h3{font-size:16px;font-weight:700;color:#1a1c1d;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.modal-box label{font-size:13px;color:#414755;font-weight:500;display:block;margin-bottom:4px}
+.modal-box input,.modal-box select{width:100%;padding:8px 12px;border:1px solid #c1c6d7;border-radius:6px;font-size:13px;outline:none;margin-bottom:12px}
+.modal-box input:focus,.modal-box select:focus{border-color:#0058bc;box-shadow:0 0 0 2px rgba(0,88,188,0.15)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+.btn-cancel{padding:8px 16px;border:1px solid #c1c6d7;border-radius:6px;background:#fff;font-size:13px;cursor:pointer}
+.btn-cancel:hover{background:#f0f0f1}
+.btn-primary{padding:8px 16px;border:none;border-radius:6px;background:#0058bc;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:#0050a8}
+
+/* ── Dropdown Menus ── */
+.dropdown-menu{position:absolute;top:100%;left:0;background:#fff;border:1px solid #d0d0d6;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.12);padding:4px;z-index:60;display:none;min-width:160px}
+.dropdown-menu.show{display:block}
+.dropdown-menu button{width:100%;text-align:left;padding:6px 12px;border:none;background:none;font-size:12px;color:#1a1c1d;cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:8px}
+.dropdown-menu button:hover{background:#eef1f6}
+.dropdown-menu .sep{height:1px;background:#e5e5ea;margin:4px 0}
+
+/* ── Context Menu ── */
+.context-menu{position:fixed;background:#fff;border:1px solid #d0d0d6;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:4px;z-index:70;min-width:200px;display:none}
+.context-menu.show{display:block}
+.context-menu button{width:100%;text-align:left;padding:7px 12px;border:none;background:none;font-size:12.5px;color:#1a1c1d;cursor:pointer;border-radius:4px;display:flex;align-items:center;gap:10px}
+.context-menu button:hover{background:#eef1f6}
+.context-menu button .shortcut{margin-left:auto;font-size:11px;color:#999;font-family:'JetBrains Mono',monospace}
+.context-menu .sep{height:1px;background:#e5e5ea;margin:4px 0}
+html.dark .context-menu{background:#27272e;border-color:#444}
+html.dark .context-menu button{color:#d0d0d8}
+html.dark .context-menu button:hover{background:#333340}
+
+/* ── Dark Mode ── */
+html.dark body{background:#1a1a1e!important}
+html.dark .title-bar{background:#0d1b2a}
+html.dark .ribbon-tabs{background:#15304a}
+html.dark .ribbon-tabs button{color:#8fb3d4}
+html.dark .ribbon-tabs button.active{background:#27272e;color:#e0e0e6}
+html.dark .ribbon-panel{background:#27272e;border-color:#3a3a44}
+html.dark .rb-btn{color:#c0c0ca}
+html.dark .rb-btn:hover{background:#3a3a46}
+html.dark .rb-btn.active{background:#1e3a5f;color:#8fb8e8}
+html.dark .rb-select{background:#1e1e24;border-color:#444;color:#e0e0e6}
+html.dark .style-btn{background:#1e1e24;border-color:#444;color:#c0c0ca}
+html.dark .paper-container{background:#333338}
+html.dark .status-bar{background:#27272e;border-color:#3a3a44}
+html.dark .status-bar span{color:#8a8a96}
+html.dark .modal-box{background:#27272e;color:#e0e0e6}
+html.dark .modal-box h3{color:#fff}
+html.dark .modal-box input,.modal-box select{background:#1e1e24;border-color:#444;color:#e0e0e6}
+html.dark .dropdown-menu{background:#27272e;border-color:#444}
+html.dark .dropdown-menu button{color:#d0d0d8}
+html.dark .dropdown-menu button:hover{background:#333340}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════ TITLE BAR ═══════════════════════ -->
+<div class="title-bar">
+  <div style="display:flex;align-items:center;gap:2px">
+    <button onclick="window.history.back()" title="Kembali"><i class="ph ph-arrow-left" style="font-size:15px"></i></button>
+    <button onclick="location.href='index.html'" title="Dasbor"><i class="ph ph-house" style="font-size:15px"></i></button>
+    <div class="tb-sep"></div>
+    <button onclick="doCmd('undo')" title="Batalkan (Ctrl+Z)"><i class="ph ph-arrow-counter-clockwise" style="font-size:15px"></i></button>
+    <button onclick="doCmd('redo')" title="Ulangi (Ctrl+Y)"><i class="ph ph-arrow-clockwise" style="font-size:15px"></i></button>
+    <div class="tb-sep"></div>
+    <button onclick="saveDraft()" title="Simpan (Ctrl+S)"><i class="ph ph-floppy-disk" style="font-size:15px"></i></button>
+  </div>
+  <div style="display:flex;align-items:center;gap:4px">
+    <i class="ph ph-file-text" style="font-size:14px;color:#8fb3d4"></i>
+    <input type="text" class="doc-name" id="docName" value="Dokumen Tanpa Judul" spellcheck="false"/>
+  </div>
+  <div style="display:flex;align-items:center;gap:4px">
+    <button onclick="showModal('macShortcuts')" title="Shortcut Keyboard Word (MacBook)" style="background:rgba(245,158,11,0.25);color:#fef08a;border:1px solid rgba(251,191,36,0.4);padding:2px 8px;border-radius:4px;font-weight:600;font-size:11px;display:flex;align-items:center;gap:4px;cursor:pointer">
+      <i class="ph ph-command" style="font-size:13px;color:#fcd34d"></i>
+      <span>Shortcut Mac</span>
+    </button>
+    <button onclick="toggleTheme()" class="theme-toggle-btn" title="Mode Gelap/Terang"><i class="ph ph-moon" style="font-size:15px"></i></button>
+    <button onclick="showModal('share')" title="Bagikan"><i class="ph ph-share-network" style="font-size:15px"></i></button>
+    <div class="tb-sep"></div>
+    <div style="display:flex;gap:4px;padding:0 4px">
+      <div style="width:10px;height:10px;border-radius:50%;background:#ff5f56"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:#ffbd2e"></div>
+      <div style="width:10px;height:10px;border-radius:50%;background:#27c93f"></div>
+    </div>
+  </div>
+</div>
+
+<!-- DNA Active Banner -->
+<div id="dnaActiveBanner" class="hidden bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 text-white px-4 py-2 text-xs flex items-center justify-between shadow-inner border-b border-indigo-500/30">
+  <div class="flex items-center gap-2">
+    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+    <span class="font-bold flex items-center gap-1"><i class="ph ph-brain text-purple-300"></i> DNA Tiru Gaya Aktif:</span>
+    <span id="dnaBannerTitle" class="text-purple-200 font-medium">Gaya Sastrawi &amp; Melankolis</span>
+  </div>
+  <div class="flex items-center gap-2">
+    <button onclick="toggleDNANovelPanel()" class="px-3 py-1.5 rounded bg-emerald-500/30 hover:bg-emerald-500/50 text-emerald-200 border border-emerald-400/30 transition-colors font-bold text-[11px] flex items-center gap-1.5 cursor-pointer" id="btnBuatNovelDNA">
+      <i class="ph ph-magic-wand text-amber-300"></i> Buat Novel Baru dengan DNA AI
+    </button>
+    <button onclick="insertDNASampleText()" class="px-2.5 py-1 rounded bg-purple-500/30 hover:bg-purple-500/50 text-purple-200 border border-purple-400/30 transition-colors font-semibold text-[11px] flex items-center gap-1 cursor-pointer">
+      <i class="ph ph-sparkle text-amber-300"></i> Sisipkan Contoh
+    </button>
+    <button onclick="removeActiveDNA()" class="text-purple-300 hover:text-white text-xs p-1" title="Lepas Profil DNA">
+      <i class="ph ph-x"></i>
+    </button>
+  </div>
+</div>
+
+<!-- DNA Novel Generation Panel (hidden by default) -->
+<div id="dnaNovelPanel" class="hidden" style="background:linear-gradient(135deg,#1e1b4b,#312e81,#1e293b);border-bottom:2px solid rgba(129,140,248,0.3);padding:16px 20px;z-index:47">
+  <div style="max-width:900px;margin:0 auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h4 style="color:#c7d2fe;font-size:13px;font-weight:700;margin:0;display:flex;align-items:center;gap:6px">
+        <i class="ph ph-dna" style="color:#a78bfa;font-size:18px"></i>
+        Buat Novel Baru — Gaya DNA Terekstrak
+      </h4>
+      <button onclick="toggleDNANovelPanel()" style="background:none;border:none;color:#818cf8;cursor:pointer;font-size:18px;padding:4px"><i class="ph ph-x"></i></button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+      <div>
+        <label style="color:#a5b4fc;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px">Judul Novel</label>
+        <input type="text" id="dnaNovelJudul" placeholder="Contoh: Jejak di Puncak Aethelgard" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:6px;padding:8px 10px;color:#e0e7ff;font-size:12px;outline:none" />
+      </div>
+      <div>
+        <label style="color:#a5b4fc;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px">Genre</label>
+        <select id="dnaNovelGenre" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:6px;padding:8px 10px;color:#e0e7ff;font-size:12px;outline:none;cursor:pointer">
+          <option value="Fiksi">Fiksi Umum</option>
+          <option value="Fantasi">Fantasi</option>
+          <option value="Romansa">Romansa</option>
+          <option value="Misteri">Misteri & Thriller</option>
+          <option value="Horor">Horor</option>
+          <option value="Fiksi Ilmiah">Fiksi Ilmiah (Sci-Fi)</option>
+          <option value="Petualangan">Petualangan</option>
+          <option value="Drama">Drama</option>
+          <option value="Fiksi Sejarah">Fiksi Sejarah</option>
+          <option value="Slice of Life">Slice of Life</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="color:#a5b4fc;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:4px">Sinopsis / Ide Cerita</label>
+      <textarea id="dnaNovelSinopsis" rows="3" placeholder="Deskripsikan ide cerita Anda secara singkat. Contoh: Seorang pemuda bernama Arya yang menemukan seruling kuno di puncak gunung mistis, yang membawanya ke petualangan melawan kekuatan gelap..." style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:6px;padding:8px 10px;color:#e0e7ff;font-size:12px;outline:none;resize:vertical;line-height:1.5"></textarea>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div>
+          <label style="color:#a5b4fc;font-size:10px;font-weight:600;display:block;margin-bottom:2px">Target Kata</label>
+          <select id="dnaNovelKata" style="background:rgba(255,255,255,0.08);border:1px solid rgba(129,140,248,0.3);border-radius:6px;padding:6px 8px;color:#e0e7ff;font-size:11px;outline:none;cursor:pointer">
+            <option value="1500">~1.500 kata (Cerpen)</option>
+            <option value="3000" selected>~3.000 kata (Cerpen Panjang)</option>
+            <option value="5000">~5.000 kata (Novelet)</option>
+            <option value="8000">~8.000 kata (Novela Pendek)</option>
+          </select>
+        </div>
+        <div id="dnaGenStatus" style="color:#818cf8;font-size:11px;font-weight:600;display:none">
+          <span class="animate-pulse">⚡ AI Sedang Menulis...</span>
+        </div>
+      </div>
+      <button onclick="generateNovelWithDNA()" id="btnStartDNAGen" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:8px;padding:10px 24px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 4px 12px rgba(99,102,241,0.4);transition:all 0.2s">
+        <i class="ph ph-pen-nib" style="font-size:16px"></i> Mulai Tulis Novel dengan DNA AI
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ RIBBON TABS ═══════════════════════ -->
+<div class="ribbon-tabs" id="ribbonTabs">
+  <button class="active" data-tab="beranda">Beranda</button>
+  <button data-tab="sisipkan">Sisipkan</button>
+  <button data-tab="desain">Desain</button>
+  <button data-tab="tataLetak">Tata Letak</button>
+  <button data-tab="tinjau">Tinjau</button>
+  <button data-tab="tampilan">Tampilan</button>
+</div>
+
+<!-- ═══════════════════════ RIBBON PANELS ═══════════════════════ -->
+
+<!-- ── Beranda ── -->
+<div class="ribbon-panel active" id="panel-beranda">
+  <!-- Clipboard -->
+  <div class="ribbon-group" style="flex-direction:column;gap:2px;padding:2px 8px">
+    <div style="display:flex;gap:2px">
+      <button class="rb-btn" onclick="doCmd('cut')" title="Potong"><i class="ph ph-scissors"></i></button>
+      <button class="rb-btn" onclick="doCmd('copy')" title="Salin"><i class="ph ph-copy"></i></button>
+    </div>
+    <button class="rb-btn" onclick="doCmd('paste')" title="Tempel" style="width:auto;padding:0 8px;gap:4px;font-size:11px"><i class="ph ph-clipboard-text"></i> Tempel</button>
+    <span class="ribbon-group-label">Papan Klip</span>
+  </div>
+  <!-- Font -->
+  <div class="ribbon-group" style="flex-direction:column;gap:3px;padding:4px 8px">
+    <div style="display:flex;gap:3px;align-items:center">
+      <select class="rb-select font-select" id="fontFamily" onchange="doCmd('fontName',this.value)">
+        <option value="Calibri, Segoe UI, sans-serif">Calibri</option>
+        <option value="Arial, sans-serif">Arial</option>
+        <option value="Times New Roman, serif">Times New Roman</option>
+        <option value="Georgia, serif">Georgia</option>
+        <option value="Verdana, sans-serif">Verdana</option>
+        <option value="Courier New, monospace">Courier New</option>
+        <option value="Trebuchet MS, sans-serif">Trebuchet MS</option>
+        <option value="Source Serif 4, serif">Source Serif 4</option>
+        <option value="Plus Jakarta Sans, sans-serif">Plus Jakarta Sans</option>
+        <option value="Merriweather, serif">Merriweather</option>
+        <option value="Lora, serif">Lora</option>
+        <option value="Roboto, sans-serif">Roboto</option>
+        <option value="Open Sans, sans-serif">Open Sans</option>
+        <option value="Playfair Display, serif">Playfair Display</option>
+      </select>
+      <select class="rb-select size-select" id="fontSize" onchange="applyFontSize(this.value)">
+        <option>8</option><option>9</option><option>10</option><option selected>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>22</option><option>24</option><option>26</option><option>28</option><option>36</option><option>48</option><option>72</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:1px;align-items:center">
+      <button class="rb-btn" onclick="doCmd('bold')" title="Tebal (Ctrl+B)" id="btnBold"><i class="ph ph-text-bolder"></i></button>
+      <button class="rb-btn" onclick="doCmd('italic')" title="Miring (Ctrl+I)" id="btnItalic"><i class="ph ph-text-italic"></i></button>
+      <button class="rb-btn" onclick="doCmd('underline')" title="Garis Bawah (Ctrl+U)" id="btnUnderline"><i class="ph ph-text-underline"></i></button>
+      <button class="rb-btn" onclick="doCmd('strikeThrough')" title="Coret" id="btnStrike"><i class="ph ph-text-strikethrough"></i></button>
+      <button class="rb-btn" onclick="doCmd('subscript')" title="Subskrip"><i class="ph ph-text-subscript"></i></button>
+      <button class="rb-btn" onclick="doCmd('superscript')" title="Superskrip"><i class="ph ph-text-superscript"></i></button>
+      <div class="rb-color-btn" title="Warna Teks">
+        <i class="ph ph-text-aa" style="font-size:15px"></i>
+        <div class="bar" id="fgColorBar" style="background:#000"></div>
+        <input type="color" id="fgColor" value="#000000" oninput="doCmd('foreColor',this.value);document.getElementById('fgColorBar').style.background=this.value"/>
+      </div>
+      <div class="rb-color-btn" title="Warna Sorotan">
+        <i class="ph ph-highlighter-circle" style="font-size:15px"></i>
+        <div class="bar" id="bgColorBar" style="background:#ffff00"></div>
+        <input type="color" id="bgColor" value="#ffff00" oninput="doCmd('hiliteColor',this.value);document.getElementById('bgColorBar').style.background=this.value"/>
+      </div>
+    </div>
+    <span class="ribbon-group-label">Font</span>
+  </div>
+  <!-- Paragraph -->
+  <div class="ribbon-group" style="flex-direction:column;gap:3px;padding:4px 8px">
+    <div style="display:flex;gap:1px;align-items:center">
+      <button class="rb-btn" onclick="doCmd('justifyLeft')" title="Rata Kiri" id="btnLeft"><i class="ph ph-text-align-left"></i></button>
+      <button class="rb-btn" onclick="doCmd('justifyCenter')" title="Rata Tengah" id="btnCenter"><i class="ph ph-text-align-center"></i></button>
+      <button class="rb-btn" onclick="doCmd('justifyRight')" title="Rata Kanan" id="btnRight"><i class="ph ph-text-align-right"></i></button>
+      <button class="rb-btn" onclick="doCmd('justifyFull')" title="Rata Kiri-Kanan" id="btnJustify"><i class="ph ph-text-align-justify"></i></button>
+    </div>
+    <div style="display:flex;gap:1px;align-items:center">
+      <button class="rb-btn" onclick="doCmd('insertUnorderedList')" title="Daftar Bullet" id="btnUL"><i class="ph ph-list-bullets"></i></button>
+      <button class="rb-btn" onclick="doCmd('insertOrderedList')" title="Daftar Nomor" id="btnOL"><i class="ph ph-list-numbers"></i></button>
+      <button class="rb-btn" onclick="doCmd('outdent')" title="Kurangi Indentasi"><i class="ph ph-text-outdent"></i></button>
+      <button class="rb-btn" onclick="doCmd('indent')" title="Tambah Indentasi"><i class="ph ph-text-indent"></i></button>
+      <button class="rb-btn" onclick="toggleLineSpacing()" title="Spasi Baris" id="btnSpacing"><i class="ph ph-line-segments"></i></button>
+    </div>
+    <span class="ribbon-group-label">Paragraf</span>
+  </div>
+  <!-- Styles -->
+  <div class="ribbon-group" style="flex-direction:column;gap:3px;padding:4px 8px">
+    <div style="display:flex;gap:3px;overflow-x:auto;max-width:360px">
+      <button class="style-btn active" onclick="applyStyle('p','Normal',this)">Normal</button>
+      <button class="style-btn" onclick="applyStyle('h1','Judul 1',this)" style="font-size:14px;font-weight:700">Judul 1</button>
+      <button class="style-btn" onclick="applyStyle('h2','Judul 2',this)" style="font-size:12px;font-weight:700">Judul 2</button>
+      <button class="style-btn" onclick="applyStyle('h3','Judul 3',this)" style="font-size:11px;font-weight:700">Judul 3</button>
+      <button class="style-btn" onclick="applyStyle('blockquote','Kutipan',this)" style="font-style:italic">Kutipan</button>
+      <button class="style-btn" onclick="applyStyle('pre','Kode',this)" style="font-family:monospace;font-size:10px">Kode</button>
+    </div>
+    <span class="ribbon-group-label">Gaya</span>
+  </div>
+  <!-- Extra Tools -->
+  <div class="ribbon-group" style="flex-direction:column;gap:3px;padding:4px 8px;border-right:none">
+    <div style="display:flex;gap:1px;align-items:center">
+      <button class="rb-btn" onclick="doCmd('removeFormat')" title="Hapus Format"><i class="ph ph-eraser"></i></button>
+      <button class="rb-btn" onclick="changeCase('upper')" title="HURUF BESAR" style="font-size:10px;font-weight:700">AA</button>
+      <button class="rb-btn" onclick="changeCase('lower')" title="huruf kecil" style="font-size:10px;font-weight:700">aa</button>
+      <button class="rb-btn" onclick="changeCase('capitalize')" title="Huruf Kapital" style="font-size:10px;font-weight:700">Aa</button>
+    </div>
+    <div style="display:flex;gap:3px;align-items:center">
+      <select class="rb-select" id="lineSpacingSelect" onchange="applyLineSpacing(this.value)" style="width:90px;font-size:11px" title="Spasi Baris">
+        <option value="1">Spasi 1.0</option>
+        <option value="1.15">Spasi 1.15</option>
+        <option value="1.5" selected>Spasi 1.5</option>
+        <option value="2">Spasi 2.0</option>
+        <option value="2.5">Spasi 2.5</option>
+        <option value="3">Spasi 3.0</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Alat</span>
+  </div>
+  </div>
+</div>
+
+<!-- ── Sisipkan ── -->
+<div class="ribbon-panel" id="panel-sisipkan">
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px">
+    <button class="rb-btn rb-btn-lg" onclick="insertTable()"><i class="ph ph-table"></i>Tabel</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertImage()"><i class="ph ph-image"></i>Gambar</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertLink()"><i class="ph ph-link"></i>Tautan</button>
+    <button class="rb-btn rb-btn-lg" onclick="doCmd('insertHorizontalRule')"><i class="ph ph-minus"></i>Garis</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertPageBreak()"><i class="ph ph-file-dashed"></i>Halaman Baru</button>
+    <span class="ribbon-group-label">Sisipkan</span>
+  </div>
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px;border-right:none">
+    <button class="rb-btn rb-btn-lg" onclick="insertSymbol('—')"><i class="ph ph-text-aa"></i>Em Dash</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertSymbol('…')"><i class="ph ph-dots-three"></i>Elipsis</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertSymbol('©')"><i class="ph ph-copyright"></i>Simbol ©</button>
+    <button class="rb-btn rb-btn-lg" onclick="insertDateTime()"><i class="ph ph-calendar"></i>Tanggal</button>
+    <span class="ribbon-group-label">Simbol & Lain-Lain</span>
+  </div>
+</div>
+
+<!-- ── Desain ── -->
+<div class="ribbon-panel" id="panel-desain">
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Warna Halaman</label>
+      <input type="color" id="pageColor" value="#ffffff" onchange="document.getElementById('paperPage').style.background=this.value" style="width:48px;height:28px;border:1px solid #ccc;border-radius:4px;cursor:pointer;padding:2px"/>
+    </div>
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Warna Teks Default</label>
+      <input type="color" id="defaultTextColor" value="#000000" onchange="document.getElementById('paperPage').style.color=this.value" style="width:48px;height:28px;border:1px solid #ccc;border-radius:4px;cursor:pointer;padding:2px"/>
+    </div>
+    <span class="ribbon-group-label">Warna</span>
+  </div>
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px;border-right:none">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Batas Halaman</label>
+      <select class="rb-select" onchange="applyPageBorder(this.value)" style="width:130px">
+        <option value="none">Tidak Ada</option>
+        <option value="thin">Tipis</option>
+        <option value="medium">Sedang</option>
+        <option value="thick">Tebal</option>
+        <option value="double">Ganda</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Batas</span>
+  </div>
+</div>
+
+<!-- ── Tata Letak ── -->
+<div class="ribbon-panel" id="panel-tataLetak">
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Margin</label>
+      <select class="rb-select" id="marginSelect" onchange="applyMargin(this.value)" style="width:120px">
+        <option value="96" selected>Normal (2,54 cm)</option>
+        <option value="48">Sempit (1,27 cm)</option>
+        <option value="144">Lebar (3,81 cm)</option>
+        <option value="72">Sedang (1,91 cm)</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Margin</span>
+  </div>
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Orientasi</label>
+      <select class="rb-select" id="orientSelect" onchange="applyOrientation(this.value)" style="width:100px">
+        <option value="portrait" selected>Potret</option>
+        <option value="landscape">Lanskap</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Orientasi</span>
+  </div>
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Ukuran Kertas</label>
+      <select class="rb-select" id="paperSelect" onchange="applyPaperSize(this.value)" style="width:110px">
+        <option value="a4" selected>A4</option>
+        <option value="letter">Letter</option>
+        <option value="legal">Legal</option>
+        <option value="a5">A5</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Ukuran</span>
+  </div>
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px;border-right:none">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Kolom</label>
+      <select class="rb-select" onchange="applyColumns(this.value)" style="width:80px">
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+      </select>
+    </div>
+    <span class="ribbon-group-label">Kolom</span>
+  </div>
+</div>
+
+<!-- ── Tinjau ── -->
+<div class="ribbon-panel" id="panel-tinjau">
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px">
+    <button class="rb-btn rb-btn-lg" onclick="showWordCount()"><i class="ph ph-text-aa"></i>Jumlah Kata</button>
+    <button class="rb-btn rb-btn-lg" onclick="showModal('findReplace')"><i class="ph ph-magnifying-glass"></i>Cari & Ganti</button>
+    <span class="ribbon-group-label">Peninjauan</span>
+  </div>
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px">
+    <button class="rb-btn rb-btn-lg" onclick="showModal('macShortcuts')" style="color:#d97706"><i class="ph ph-command" style="font-size:22px"></i>Shortcut Mac</button>
+    <span class="ribbon-group-label">Bantuan</span>
+  </div>
+  <div class="ribbon-group" style="gap:6px;padding:4px 12px;border-right:none">
+    <button class="rb-btn rb-btn-lg" onclick="window.print()"><i class="ph ph-printer"></i>Cetak</button>
+    <span class="ribbon-group-label">Cetak</span>
+  </div>
+</div>
+
+<!-- ── Tampilan ── -->
+<div class="ribbon-panel" id="panel-tampilan">
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px">
+    <div>
+      <label style="font-size:10px;color:#717786;margin-bottom:3px;display:block">Zoom: <span id="zoomLabel">100</span>%</label>
+      <input type="range" min="50" max="200" value="100" class="zoom-range" id="zoomRange" oninput="applyZoom(this.value)" style="width:120px"/>
+    </div>
+    <button class="rb-btn" onclick="applyZoom(100);document.getElementById('zoomRange').value=100" title="Reset Zoom"><i class="ph ph-magnifying-glass-plus"></i></button>
+    <span class="ribbon-group-label">Zoom</span>
+  </div>
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px">
+    <button class="rb-btn rb-btn-lg" onclick="toggleFullscreen()"><i class="ph ph-arrows-out-simple"></i>Layar Penuh</button>
+    <span class="ribbon-group-label">Tampilan</span>
+  </div>
+  <div class="ribbon-group" style="gap:8px;padding:4px 12px;border-right:none">
+    <button class="rb-btn rb-btn-lg" onclick="logoutApp()"><i class="ph ph-sign-out"></i>Keluar</button>
+    <span class="ribbon-group-label">Akun</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PAPER CANVAS ═══════════════════════ -->
+<div class="paper-container" id="paperContainer">
+  <div class="paper-page" id="paperPage" contenteditable="true" spellcheck="true" style="padding:96px">
+  </div>
+</div>
+
+<!-- ═══════════════════════ STATUS BAR ═══════════════════════ -->
+<div class="status-bar">
+  <div class="status-group">
+    <span>Halaman <span id="statPage">1</span></span>
+    <span><span id="statWords">0</span> kata</span>
+    <span><span id="statChars">0</span> karakter</span>
+  </div>
+  <div class="status-group">
+    <span>Bahasa Indonesia</span>
+    <span id="statZoom">100%</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════ MODALS ═══════════════════════ -->
+
+<!-- Save As Modal -->
+<div class="modal-overlay" id="modal-saveAs">
+  <div class="modal-box">
+    <h3><i class="ph ph-floppy-disk" style="color:#0058bc"></i> Simpan Sebagai</h3>
+    <label>Nama File</label>
+    <input type="text" id="saveFileName" placeholder="Dokumen Saya"/>
+    <label>Format</label>
+    <select id="saveFormat">
+      <option value="docx">DOCX — Dokumen Word (.docx)</option>
+      <option value="pdf">PDF — Portable Document (.pdf)</option>
+      <option value="txt">TXT — Teks Biasa (.txt)</option>
+      <option value="html">HTML — Halaman Web (.html)</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="hideModal('saveAs')">Batal</button>
+      <button class="btn-primary" onclick="exportFile()"><i class="ph ph-download-simple"></i> Unduh</button>
+    </div>
+  </div>
+</div>
+
+<!-- Share Modal -->
+<div class="modal-overlay" id="modal-share">
+  <div class="modal-box">
+    <h3><i class="ph ph-share-network" style="color:#0058bc"></i> Bagikan Dokumen</h3>
+    <label>Salin teks ke papan klip</label>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button class="btn-primary" style="flex:1" onclick="copyToClipboard()"><i class="ph ph-clipboard-text"></i> Salin Teks</button>
+      <button class="btn-primary" style="flex:1;background:#4a47d2" onclick="copyHTMLToClipboard()"><i class="ph ph-code"></i> Salin HTML</button>
+    </div>
+    <button class="btn-primary" style="width:100%;background:#27c93f" onclick="window.print()"><i class="ph ph-printer"></i> Cetak / Print</button>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-cancel" onclick="hideModal('share')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Find & Replace Modal -->
+<div class="modal-overlay" id="modal-findReplace">
+  <div class="modal-box">
+    <h3><i class="ph ph-magnifying-glass" style="color:#0058bc"></i> Cari & Ganti</h3>
+    <label>Cari</label>
+    <input type="text" id="findText" placeholder="Ketik teks yang dicari..."/>
+    <label>Ganti Dengan</label>
+    <input type="text" id="replaceText" placeholder="Teks pengganti..."/>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="hideModal('findReplace')">Tutup</button>
+      <button class="btn-primary" style="background:#4a47d2" onclick="findAndHighlight()"><i class="ph ph-magnifying-glass"></i> Cari</button>
+      <button class="btn-primary" onclick="findAndReplace()"><i class="ph ph-swap"></i> Ganti Semua</button>
+    </div>
+  </div>
+</div>
+
+<!-- Word Count Modal -->
+<div class="modal-overlay" id="modal-wordCount">
+  <div class="modal-box">
+    <h3><i class="ph ph-text-aa" style="color:#0058bc"></i> Statistik Dokumen</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px" id="wordCountGrid"></div>
+    <div class="modal-actions"><button class="btn-cancel" onclick="hideModal('wordCount')">Tutup</button></div>
+  </div>
+</div>
+
+<!-- MacBook Word Shortcuts Reference Modal -->
+<div class="modal-overlay" id="modal-macShortcuts" role="dialog" aria-labelledby="macShortcutsTitle" aria-modal="true">
+  <div class="modal-box max-w-4xl w-[95%] max-h-[85vh] flex flex-col p-0 overflow-hidden bg-white dark:bg-[#1e1e24] text-on-surface rounded-2xl shadow-2xl border border-outline-variant/20">
+    
+    <!-- Header -->
+    <div class="p-4 sm:p-5 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-700 text-white flex items-center justify-between shrink-0 shadow-md">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-xl shadow-inner shrink-0">
+          <i class="ph ph-command"></i>
+        </div>
+        <div>
+          <h3 id="macShortcutsTitle" class="text-base sm:text-lg font-bold text-white m-0 leading-snug flex items-center gap-2">
+            Shortcut Keyboard Word (MacBook)
+            <span class="text-[10px] bg-white/20 text-white px-2 py-0.5 rounded-full font-medium tracking-wide">macOS</span>
+          </h3>
+          <p class="text-xs text-amber-100/90 m-0 hidden sm:block">Panduan cepat tombol pintas Microsoft Word khusus Penulis Novel & Artikel</p>
+        </div>
+      </div>
+      <button onclick="hideModal('macShortcuts')" class="p-1.5 rounded-lg hover:bg-white/20 text-white transition-colors text-lg" aria-label="Tutup modal">
+        <i class="ph ph-x"></i>
+      </button>
+    </div>
+
+    <!-- Sticky Controls Bar -->
+    <div class="p-3 sm:p-4 bg-surface-container-lowest dark:bg-[#16161c] border-b border-outline-variant/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+      <!-- Search Input -->
+      <div class="relative flex-1">
+        <i class="ph ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-outline text-base pointer-events-none"></i>
+        <input type="text" id="shortcutSearchInput" oninput="filterShortcuts(this.value)" placeholder="Cari shortcut (cth: Simpan, Undo, Bold, Seleksi, Awal Dokumen)..." class="w-full pl-9 pr-8 py-2 rounded-lg text-xs bg-surface-container-low dark:bg-[#25252e] border border-outline-variant/30 text-on-surface placeholder:text-outline focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"/>
+        <button id="clearShortcutSearch" onclick="clearSearchShortcuts()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface text-xs">
+          <i class="ph ph-x-circle-fill"></i>
+        </button>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 text-xs shrink-0">
+        <button onclick="toggleExpandAllShortcuts(true)" class="px-2.5 py-1.5 rounded-md bg-surface-container dark:bg-[#272732] hover:bg-surface-container-high text-on-surface-variant transition-colors flex items-center gap-1 font-medium">
+          <i class="ph ph-arrows-out-line"></i> Buka Semua
+        </button>
+        <button onclick="toggleExpandAllShortcuts(false)" class="px-2.5 py-1.5 rounded-md bg-surface-container dark:bg-[#272732] hover:bg-surface-container-high text-on-surface-variant transition-colors flex items-center gap-1 font-medium">
+          <i class="ph ph-arrows-in-line"></i> Tutup Semua
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Area (Scrollable) -->
+    <div class="p-3 sm:p-5 overflow-y-auto flex-1 space-y-4" id="shortcutListContainer">
+      <!-- Dynamic list rendered by JS -->
+    </div>
+
+    <!-- Footer -->
+    <div class="px-4 py-3 bg-surface-container-low dark:bg-[#14141a] border-t border-outline-variant/20 flex items-center justify-between text-xs text-outline shrink-0">
+      <div class="flex items-center gap-2">
+        <i class="ph ph-info text-amber-500 text-base"></i>
+        <span class="hidden sm:inline">Tips: Klik tombol <b>Salin</b> untuk menyalin kombinasi tombol shortcut</span>
+      </div>
+      <button onclick="hideModal('macShortcuts')" class="btn-cancel text-xs py-1 px-4">Tutup</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Context File Menu (triggered by File dropdown) -->
+<div class="dropdown-menu" id="fileMenu" style="position:fixed;top:36px;left:8px">
+  <button onclick="newDocument()"><i class="ph ph-file-plus"></i> Dokumen Baru</button>
+  <button onclick="openDraft()"><i class="ph ph-folder-open"></i> Buka Draf</button>
+  <div class="sep"></div>
+  <button onclick="saveDraft()"><i class="ph ph-floppy-disk"></i> Simpan (Ctrl+S)</button>
+  <button onclick="showModal('saveAs')"><i class="ph ph-floppy-disk-back"></i> Simpan Sebagai...</button>
+  <div class="sep"></div>
+  <button onclick="showModal('macShortcuts')"><i class="ph ph-command" style="color:#d97706"></i> Shortcut Keyboard Word (MacBook)</button>
+  <div class="sep"></div>
+  <button onclick="showModal('share')"><i class="ph ph-share-network"></i> Bagikan</button>
+  <button onclick="window.print()"><i class="ph ph-printer"></i> Cetak</button>
+  <div class="sep"></div>
+  <button onclick="deleteDraft()" style="color:#ba1a1a"><i class="ph ph-trash"></i> Hapus Draf</button>
+</div>
+
+<!-- Right-Click Context Menu -->
+<div class="context-menu" id="contextMenu">
+  <button onclick="document.execCommand('cut');hideCtx()"><i class="ph ph-scissors" style="font-size:16px"></i> Potong <span class="shortcut">⌘X</span></button>
+  <button onclick="document.execCommand('copy');hideCtx()"><i class="ph ph-copy" style="font-size:16px"></i> Salin <span class="shortcut">⌘C</span></button>
+  <button onclick="document.execCommand('paste');hideCtx()"><i class="ph ph-clipboard-text" style="font-size:16px"></i> Tempel <span class="shortcut">⌘V</span></button>
+  <div class="sep"></div>
+  <button onclick="document.execCommand('selectAll');hideCtx()"><i class="ph ph-selection-all" style="font-size:16px"></i> Pilih Semua <span class="shortcut">⌘A</span></button>
+  <div class="sep"></div>
+  <button onclick="document.execCommand('bold');hideCtx()"><i class="ph ph-text-bolder" style="font-size:16px"></i> Tebal <span class="shortcut">⌘B</span></button>
+  <button onclick="document.execCommand('italic');hideCtx()"><i class="ph ph-text-italic" style="font-size:16px"></i> Miring <span class="shortcut">⌘I</span></button>
+  <button onclick="document.execCommand('underline');hideCtx()"><i class="ph ph-text-underline" style="font-size:16px"></i> Garis Bawah <span class="shortcut">⌘U</span></button>
+  <div class="sep"></div>
+  <button onclick="document.execCommand('removeFormat');hideCtx()"><i class="ph ph-eraser" style="font-size:16px"></i> Hapus Format</button>
+  <button onclick="insertLink();hideCtx()"><i class="ph ph-link" style="font-size:16px"></i> Sisipkan Tautan</button>
+  <div class="sep"></div>
+  <button onclick="showModal('macShortcuts');hideCtx()"><i class="ph ph-command" style="font-size:16px;color:#d97706"></i> Shortcut Keyboard Word (MacBook)</button>
+</div>
+
+<input type="file" id="imageInput" accept="image/*" style="display:none" onchange="handleImageInsert(this)"/>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════ -->
+<script>
+// ══════════════════════════════════════════════════════════
+// MACBOOK WORD SHORTCUTS DATA & RENDERER
+// ══════════════════════════════════════════════════════════
+const MAC_WORD_SHORTCUTS = [
+  {
+    id: 'writer-favorites',
+    title: 'Shortcut Favorit Penulis Novel',
+    icon: 'ph-sparkle',
+    isFavorite: true,
+    badgeText: 'Paling Sering Dipakai',
+    description: 'Tombol pintas yang paling vital bagi penulis novel untuk kecepatan & fokus menulis.',
+    items: [
+      { name: 'Simpan Draf', shortcut: '⌘ S', desc: 'Menyimpan progres penulisan ke draf lokal' },
+      { name: 'Cari Teks', shortcut: '⌘ F', desc: 'Membuka panel cari & ganti kata' },
+      { name: 'Ganti Kata (Replace)', shortcut: '⇧ ⌘ H', desc: 'Membuka dialog ganti teks otomatis' },
+      { name: 'Batalkan (Undo)', shortcut: '⌘ Z', desc: 'Membatalkan ketikan atau aksi terakhir' },
+      { name: 'Pilih Semua Teks', shortcut: '⌘ A', desc: 'Memblok seluruh isi naskah' },
+      { name: 'Lompat Per Kata', shortcut: '⌥ ← / ⌥ →', desc: 'Menggeser kursor per kata (Kiri / Kanan)' },
+      { name: 'Lompat ke Awal Dokumen', shortcut: '⌘ ↑', desc: 'Pindah kursor langsung ke paling atas naskah' },
+      { name: 'Lompat ke Akhir Dokumen', shortcut: '⌘ ↓', desc: 'Pindah kursor langsung ke paling bawah naskah' },
+      { name: 'Pilih Sampai Akhir Dokumen', shortcut: '⇧ ⌘ ↓', desc: 'Memblok naskah dari kursor sampai paragraf terakhir' }
+    ]
+  },
+  {
+    id: 'file-docs',
+    title: 'File & Dokumen',
+    icon: 'ph-file-text',
+    items: [
+      { name: 'Dokumen Baru', shortcut: '⌘ N', desc: 'Membuat dokumen kertas kosong baru (browser mungkin membuka jendela baru jika direservasi)' },
+      { name: 'Buka Dokumen', shortcut: '⌘ O', desc: 'Membuka draf naskah yang tersimpan' },
+      { name: 'Simpan', shortcut: '⌘ S', desc: 'Menyimpan perubahan naskah' },
+      { name: 'Simpan Sebagai', shortcut: '⇧ ⌘ S', desc: 'Ekspor naskah ke DOCX, PDF, atau TXT' },
+      { name: 'Cetak / Print', shortcut: '⌘ P', desc: 'Mencetak dokumen ke printer atau PDF' },
+      { name: 'Tutup Dokumen', shortcut: '⌘ W', desc: 'Reset ke dokumen baru (browser bisa mereservasi ⌘W untuk menutup tab)' },
+      { name: 'Keluar Word', shortcut: '⌘ Q', desc: 'Dikunci sistem operasi untuk keluar dari browser — tidak dapat di-override oleh halaman web' }
+    ]
+  },
+  {
+    id: 'edit-text',
+    title: 'Edit Teks',
+    icon: 'ph-pencil-line',
+    items: [
+      { name: 'Undo (Batalkan)', shortcut: '⌘ Z', desc: 'Membatalkan aksi penulisan terakhir' },
+      { name: 'Redo (Ulangi)', shortcut: '⇧ ⌘ Z', desc: 'Mengulang aksi yang dibatalkan' },
+      { name: 'Cut (Potong)', shortcut: '⌘ X', desc: 'Memotong teks yang diblok' },
+      { name: 'Copy (Salin)', shortcut: '⌘ C', desc: 'Menyalin teks ke clipboard' },
+      { name: 'Paste (Tempel)', shortcut: '⌘ V', desc: 'Menempelkan teks dari clipboard' },
+      { name: 'Pilih Semua', shortcut: '⌘ A', desc: 'Memblok seluruh naskah' },
+      { name: 'Cari Teks', shortcut: '⌘ F', desc: 'Mencari kata tertentu dalam dokumen' },
+      { name: 'Replace (Ganti)', shortcut: '⇧ ⌘ H', desc: 'Mengganti kata yang dicari' }
+    ]
+  },
+  {
+    id: 'format-text',
+    title: 'Format Teks',
+    icon: 'ph-text-bolder',
+    items: [
+      { name: 'Tebal (Bold)', shortcut: '⌘ B', desc: 'Mengubah teks menjadi tebal' },
+      { name: 'Miring (Italic)', shortcut: '⌘ I', desc: 'Mengubah teks menjadi miring (istilah asing)' },
+      { name: 'Garis Bawah (Underline)', shortcut: '⌘ U', desc: 'Memberi garis bawah pada teks' },
+      { name: 'Teks Coret (Strikethrough)', shortcut: '⌘ ⇧ X', desc: 'Memberi garis coret tengah pada teks' },
+      { name: 'Superscript', shortcut: '⌘ ⇧ +', desc: 'Format teks di atas (catatan kaki)' },
+      { name: 'Subscript', shortcut: '⌘ =', desc: 'Format teks di bawah' },
+      { name: 'Perbesar Ukuran Font', shortcut: '⌘ ⇧ >', desc: 'Menambah ukuran font teks' },
+      { name: 'Perkecil Ukuran Font', shortcut: '⌘ ⇧ <', desc: 'Mengurangi ukuran font teks' }
+    ]
+  },
+  {
+    id: 'alignment',
+    title: 'Alignment (Rata Teks)',
+    icon: 'ph-text-align-justify',
+    items: [
+      { name: 'Rata Kiri (Left)', shortcut: '⌘ L', desc: 'Mensejajarkan paragraf ke kiri' },
+      { name: 'Rata Tengah (Center)', shortcut: '⌘ E', desc: 'Mensejajarkan teks di tengah (Judul bab)' },
+      { name: 'Rata Kanan (Right)', shortcut: '⌘ R', desc: 'Mensejajarkan paragraf ke kanan' },
+      { name: 'Rata Kiri-Kanan (Justify)', shortcut: '⌘ J', desc: 'Mensejajarkan paragraf rapi di kedua sisi' }
+    ]
+  },
+  {
+    id: 'paragraph',
+    title: 'Paragraf & Spasi',
+    icon: 'ph-line-segments',
+    items: [
+      { name: 'Tambah Indentasi', shortcut: '⌘ ]', desc: 'Geser paragraf ke kanan (Tab)' },
+      { name: 'Kurangi Indentasi', shortcut: '⌘ [', desc: 'Geser paragraf ke kiri (Shift+Tab)' },
+      { name: 'Single Spacing (1.0)', shortcut: '⌘ 1', desc: 'Atur spasi baris rapat 1.0 (Chrome bisa mereservasi ⌘1-9 untuk pindah tab)' },
+      { name: 'Double Spacing (2.0)', shortcut: '⌘ 2', desc: 'Atur spasi baris renggang 2.0 (Chrome bisa mereservasi ⌘1-9 untuk pindah tab)' },
+      { name: 'Spasi 1.5 Lines', shortcut: '⌘ 5', desc: 'Atur spasi baris standar novel 1.5 (Chrome bisa mereservasi ⌘1-9 untuk pindah tab)' }
+    ]
+  },
+  {
+    id: 'nav-docs',
+    title: 'Navigasi Dokumen',
+    icon: 'ph-compass',
+    items: [
+      { name: 'Pindah ke Awal Baris', shortcut: '⌘ ←', desc: 'Geser kursor ke paling kiri baris' },
+      { name: 'Pindah ke Akhir Baris', shortcut: '⌘ →', desc: 'Geser kursor ke paling kanan baris' },
+      { name: 'Pindah ke Awal Dokumen', shortcut: '⌘ ↑', desc: 'Pindah kursor ke paling atas naskah' },
+      { name: 'Pindah ke Akhir Dokumen', shortcut: '⌘ ↓', desc: 'Pindah kursor ke paling bawah naskah' },
+      { name: 'Pindah Kata Sebelumnya', shortcut: '⌥ ←', desc: 'Lompat kursor 1 kata ke kiri' },
+      { name: 'Pindah Kata Berikutnya', shortcut: '⌥ →', desc: 'Lompat kursor 1 kata ke kanan' }
+    ]
+  },
+  {
+    id: 'selection',
+    title: 'Seleksi Teks',
+    icon: 'ph-selection',
+    items: [
+      { name: 'Pilih Karakter Kiri', shortcut: '⇧ ←', desc: 'Blok 1 karakter ke kiri' },
+      { name: 'Pilih Karakter Kanan', shortcut: '⇧ →', desc: 'Blok 1 karakter ke kanan' },
+      { name: 'Pilih Satu Kata Kiri', shortcut: '⇧ ⌥ ←', desc: 'Blok 1 kata ke kiri' },
+      { name: 'Pilih Satu Kata Kanan', shortcut: '⇧ ⌥ →', desc: 'Blok 1 kata ke kanan' },
+      { name: 'Pilih Sampai Awal Baris', shortcut: '⇧ ⌘ ←', desc: 'Blok teks dari kursor ke awal baris' },
+      { name: 'Pilih Sampai Akhir Baris', shortcut: '⇧ ⌘ →', desc: 'Blok teks dari kursor ke akhir baris' },
+      { name: 'Pilih Sampai Awal Dokumen', shortcut: '⇧ ⌘ ↑', desc: 'Blok teks dari kursor ke paling atas naskah' },
+      { name: 'Pilih Sampai Akhir Dokumen', shortcut: '⇧ ⌘ ↓', desc: 'Blok teks dari kursor ke paling bawah naskah' }
+    ]
+  },
+  {
+    id: 'review',
+    title: 'Review & Peninjauan',
+    icon: 'ph-check-circle',
+    items: [
+      { name: 'Komentar Baru', shortcut: '⌘ ⌥ A', desc: 'Belum tersedia — novelGENerator belum punya fitur komentar naskah' },
+      { name: 'Track Changes', shortcut: '⌘ ⇧ E', desc: 'Belum tersedia di halaman ini — gunakan Riwayat Revisi di Editor Naskah' },
+      { name: 'Cek Ejaan', shortcut: '⌘ ;', desc: 'Aktif/nonaktifkan pemeriksa ejaan browser pada naskah' }
+    ]
+  },
+  {
+    id: 'mac-native',
+    title: 'Shortcut Mac Bawaan Sistem',
+    icon: 'ph-apple-logo',
+    description: 'Shortcut level sistem operasi macOS — berjalan otomatis di browser mana pun, tidak diikat ke novelGENerator.',
+    items: [
+      { name: 'Emoji', shortcut: 'Control ⌘ Space', desc: 'Membuka panel emoji macOS' },
+      { name: 'Screenshot Area', shortcut: '⇧ ⌘ 4', desc: 'Ambil screenshot area tertentu' },
+      { name: 'Screenshot Layar Penuh', shortcut: '⇧ ⌘ 3', desc: 'Ambil screenshot seluruh layar' },
+      { name: 'Pindah Aplikasi', shortcut: '⌘ Tab', desc: 'Beralih antar aplikasi yang terbuka' },
+      { name: 'Force Quit', shortcut: '⌥ ⌘ Esc', desc: 'Paksa keluar dari aplikasi yang macet' },
+      { name: 'Spotlight Search', shortcut: '⌘ Space', desc: 'Buka pencarian Spotlight macOS' }
+    ]
+  }
+];
+
+let shortcutCategoryStates = {};
+
+function renderKbdBadges(shortcutStr) {
+  return shortcutStr.split(' ').map(token => {
+    if (token === '/') return '<span class="text-xs text-outline font-sans">/</span>';
+    return `<kbd class="inline-flex items-center justify-center min-w-[22px] h-6 px-1.5 text-[11px] font-mono font-semibold text-slate-800 dark:text-slate-100 bg-slate-100 dark:bg-[#2c2c36] border border-slate-300 dark:border-slate-600 rounded shadow-sm">${token}</kbd>`;
+  }).join(' ');
+}
+
+function renderMacShortcuts(query = '') {
+  const container = document.getElementById('shortcutListContainer');
+  if (!container) return;
+  const q = query.trim().toLowerCase();
+
+  let html = '';
+  let totalMatch = 0;
+
+  MAC_WORD_SHORTCUTS.forEach(cat => {
+    const filteredItems = cat.items.filter(item => {
+      if (!q) return true;
+      return item.name.toLowerCase().includes(q) || item.shortcut.toLowerCase().includes(q) || (item.desc && item.desc.toLowerCase().includes(q));
+    });
+
+    if (filteredItems.length === 0) return;
+    totalMatch += filteredItems.length;
+
+    const isExpanded = shortcutCategoryStates[cat.id] !== false || q.length > 0;
+    const isFav = cat.isFavorite;
+
+    html += `
+      <div class="rounded-xl border ${isFav ? 'border-amber-400/50 dark:border-amber-500/40 bg-amber-50/50 dark:bg-amber-950/20' : 'border-outline-variant/30 bg-surface-container-lowest dark:bg-[#1a1a20]'} overflow-hidden transition-all shadow-sm">
+        
+        <button onclick="toggleShortcutCategory('${cat.id}')" class="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-surface-container/50 dark:hover:bg-white/5 transition-colors focus:outline-none select-none">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg ${isFav ? 'bg-gradient-to-br from-amber-500 to-amber-600 text-white' : 'bg-surface-container dark:bg-[#282832] text-amber-600 dark:text-amber-400'} flex items-center justify-center text-sm font-bold shadow-xs">
+              <i class="ph ${cat.icon}"></i>
+            </div>
+            <div>
+              <h4 class="text-xs sm:text-sm font-bold text-on-surface flex items-center gap-2 m-0">
+                ${cat.title}
+                ${isFav ? `<span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-gradient-to-r from-amber-500 to-amber-600 text-white px-2 py-0.5 rounded-full shadow-xs"><i class="ph ph-sparkle text-[11px]"></i> ${cat.badgeText}</span>` : ''}
+              </h4>
+              ${cat.description ? `<p class="text-[11px] text-outline m-0">${cat.description}</p>` : ''}
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-surface-container dark:bg-[#282832] text-outline">${filteredItems.length} shortcut</span>
+            <i class="ph ${isExpanded ? 'ph-caret-up' : 'ph-caret-down'} text-outline text-sm transition-transform"></i>
+          </div>
+        </button>
+
+        ${isExpanded ? `
+          <div class="px-3 pb-3 pt-1 grid grid-cols-1 md:grid-cols-2 gap-2 border-t border-outline-variant/15">
+            ${filteredItems.map(item => `
+              <div class="p-2.5 rounded-lg bg-surface-container-low/70 dark:bg-[#22222b] border border-outline-variant/20 flex items-center justify-between gap-3 hover:border-amber-400/40 transition-all group">
+                <div class="min-w-0 flex-1">
+                  <div class="text-xs font-semibold text-on-surface truncate">${item.name}</div>
+                  ${item.desc ? `<div class="text-[10px] text-outline truncate mt-0.5">${item.desc}</div>` : ''}
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <div class="flex items-center gap-1">${renderKbdBadges(item.shortcut)}</div>
+                  <button onclick="copyShortcutText('${item.shortcut.replace(/'/g, "\\'")}')" title="Salin Kombinasi Tombol" class="p-1 rounded text-outline hover:text-amber-600 hover:bg-amber-500/10 transition-colors text-xs opacity-80 group-hover:opacity-100">
+                    <i class="ph ph-copy"></i>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  });
+
+  if (totalMatch === 0) {
+    html = `
+      <div class="text-center py-12">
+        <i class="ph ph-magnifying-glass text-4xl text-outline mb-2 inline-block"></i>
+        <h4 class="text-sm font-bold text-on-surface">Shortcut tidak ditemukan</h4>
+        <p class="text-xs text-outline">Tidak ada hasil untuk "${query}". Coba kata kunci lain.</p>
+        <button onclick="clearSearchShortcuts()" class="btn-primary text-xs mt-3 px-4 py-1.5">Bersihkan Pencarian</button>
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+function filterShortcuts(val) {
+  const clearBtn = document.getElementById('clearShortcutSearch');
+  if (clearBtn) clearBtn.classList.toggle('hidden', !val);
+  renderMacShortcuts(val);
+}
+
+function clearSearchShortcuts() {
+  const inp = document.getElementById('shortcutSearchInput');
+  if (inp) inp.value = '';
+  filterShortcuts('');
+}
+
+function toggleShortcutCategory(id) {
+  shortcutCategoryStates[id] = shortcutCategoryStates[id] === false ? true : false;
+  renderMacShortcuts(document.getElementById('shortcutSearchInput')?.value || '');
+}
+
+function toggleExpandAllShortcuts(expandState) {
+  MAC_WORD_SHORTCUTS.forEach(cat => { shortcutCategoryStates[cat.id] = expandState; });
+  renderMacShortcuts(document.getElementById('shortcutSearchInput')?.value || '');
+}
+
+function copyShortcutText(shortcutText) {
+  navigator.clipboard.writeText(shortcutText).then(() => {
+    showToast('✓ Shortcut "' + shortcutText + '" disalin!');
+  }).catch(() => {
+    showToast('Shortcut: ' + shortcutText);
+  });
+}
+
+// ── Global State ──
+const paper = document.getElementById('paperPage');
+const container = document.getElementById('paperContainer');
+const ctxMenu = document.getElementById('contextMenu');
+let currentMargin = 96;
+let currentZoom = 100;
+let lineSpacing = 1.5;
+let autoSaveTimer = null;
+let isDirtyTulis = false;
+
+// ══════════════════════════════════════════════════════════
+// CORE COMMAND — executes formatting without breaking selection
+// ══════════════════════════════════════════════════════════
+function doCmd(cmd, val) {
+  paper.focus(); // ensure focus is on paper first
+  document.execCommand(cmd, false, val || null);
+  updateToolbarState();
+}
+
+// ── Font Size (CSS-based, not the old 1-7 scale) ──
+function applyFontSize(size) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) {
+    // No selection — just set for next typed text
+    paper.style.fontSize = size + 'pt';
+    return;
+  }
+  document.execCommand('fontSize', false, '7');
+  paper.querySelectorAll('font[size="7"]').forEach(el => {
+    el.removeAttribute('size');
+    el.style.fontSize = size + 'pt';
+  });
+}
+
+// ── Apply Block Style ──
+function applyStyle(tag, name, btn) {
+  document.execCommand('formatBlock', false, '<' + tag + '>');
+  document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  paper.focus();
+}
+
+// ── Line Spacing ──
+function applyLineSpacing(val) {
+  lineSpacing = parseFloat(val);
+  paper.style.lineHeight = lineSpacing;
+}
+
+function setLineSpacingShortcut(val) {
+  applyLineSpacing(val);
+  const sel = document.getElementById('lineSpacingSelect');
+  if (sel) sel.value = val;
+  showToast('Spasi baris: ' + val);
+}
+
+// ── Font Size Step (Cmd+Shift+> / Cmd+Shift+<) ──
+function stepFontSize(dir) {
+  const sel = document.getElementById('fontSize');
+  if (!sel) return;
+  const opts = [...sel.options].map(o => parseFloat(o.value));
+  let idx = opts.indexOf(parseFloat(sel.value));
+  if (idx === -1) idx = opts.indexOf(11);
+  idx = Math.min(opts.length - 1, Math.max(0, idx + dir));
+  sel.value = opts[idx];
+  applyFontSize(opts[idx]);
+  showToast('Ukuran font: ' + opts[idx] + 'pt');
+}
+
+// ── Heading / Style Shortcut (Option+Cmd+1/2/3/0) ──
+function applyHeadingShortcut(tag, label) {
+  const btn = [...document.querySelectorAll('.style-btn')].find(b => b.textContent.trim() === label);
+  applyStyle(tag, label, btn);
+}
+
+// ── Paste Tanpa Format (Option+Shift+Cmd+V) ──
+function pasteTanpaFormat() {
+  paper.focus();
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(text => {
+      document.execCommand('insertText', false, text);
+    }).catch(() => {
+      showToast('Izin clipboard ditolak — tempel dengan ⌘V lalu gunakan "Hapus Format"');
+    });
+  } else {
+    showToast('Browser tidak mendukung tempel-tanpa-format langsung');
+  }
+}
+
+// ── Toggle Cek Ejaan (Cmd+;) ──
+function toggleSpellcheckPaper() {
+  const aktif = paper.spellcheck !== false;
+  paper.spellcheck = !aktif;
+  showToast('Cek ejaan: ' + (paper.spellcheck ? 'Aktif' : 'Nonaktif'));
+}
+
+function fiturBelumTersedia(nama) {
+  showToast('Fitur "' + nama + '" belum tersedia di novelGENerator');
+}
+
+function toggleLineSpacing() {
+  const spacings = [1, 1.15, 1.5, 2, 2.5, 3];
+  const idx = spacings.indexOf(lineSpacing);
+  lineSpacing = spacings[(idx + 1) % spacings.length];
+  paper.style.lineHeight = lineSpacing;
+  showToast('Spasi baris: ' + lineSpacing);
+}
+
+// ══════════════════════════════════════════════════════════
+// TEXT CASE TRANSFORM
+// ══════════════════════════════════════════════════════════
+function changeCase(mode) {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return;
+  const text = sel.toString();
+  let result;
+  switch (mode) {
+    case 'upper': result = text.toUpperCase(); break;
+    case 'lower': result = text.toLowerCase(); break;
+    case 'capitalize': result = text.replace(/\b\w/g, c => c.toUpperCase()); break;
+    default: return;
+  }
+  document.execCommand('insertText', false, result);
+}
+
+// ══════════════════════════════════════════════════════════
+// INSERT FUNCTIONS
+// ══════════════════════════════════════════════════════════
+function insertTable() {
+  const rows = prompt('Jumlah baris:', '3');
+  const cols = prompt('Jumlah kolom:', '3');
+  if (!rows || !cols) return;
+  let html = '<table style="border-collapse:collapse;width:100%;margin:8px 0">';
+  for (let r = 0; r < parseInt(rows); r++) {
+    html += '<tr>';
+    for (let c = 0; c < parseInt(cols); c++) {
+      html += '<td style="border:1px solid #999;padding:6px 10px;min-width:40px">&nbsp;</td>';
+    }
+    html += '</tr>';
+  }
+  html += '</table><p><br></p>';
+  document.execCommand('insertHTML', false, html);
+  paper.focus();
+}
+
+function insertImage() {
+  document.getElementById('imageInput').click();
+}
+
+function handleImageInsert(input) {
+  if (!input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    paper.focus();
+    document.execCommand('insertHTML', false,
+      '<img src="' + e.target.result + '" style="max-width:100%;height:auto;margin:8px 0;border-radius:4px" />');
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function insertLink() {
+  const url = prompt('Masukkan URL:', 'https://');
+  if (!url) return;
+  const sel = window.getSelection();
+  const text = (sel && sel.toString()) || url;
+  paper.focus();
+  document.execCommand('insertHTML', false, '<a href="' + url + '" style="color:#0058bc;text-decoration:underline" target="_blank">' + text + '</a>');
+}
+
+function insertPageBreak() {
+  paper.focus();
+  document.execCommand('insertHTML', false, '<hr style="border:none;border-top:2px dashed #c8c8d0;margin:32px 0;page-break-after:always"/>');
+}
+
+function insertSymbol(sym) {
+  paper.focus();
+  document.execCommand('insertText', false, sym);
+}
+
+function insertDateTime() {
+  const now = new Date();
+  const str = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + ', ' + now.toLocaleTimeString('id-ID');
+  paper.focus();
+  document.execCommand('insertText', false, str);
+}
+
+// ══════════════════════════════════════════════════════════
+// LAYOUT FUNCTIONS
+// ══════════════════════════════════════════════════════════
+function applyMargin(px) {
+  currentMargin = parseInt(px);
+  paper.style.padding = currentMargin + 'px';
+}
+
+function applyOrientation(orient) {
+  const sizes = { a4: [794, 1123], letter: [816, 1056], legal: [816, 1344], a5: [559, 794] };
+  const sel = document.getElementById('paperSelect').value;
+  const [w, h] = sizes[sel] || sizes.a4;
+  if (orient === 'landscape') {
+    paper.style.width = h + 'px'; paper.style.minHeight = w + 'px';
+  } else {
+    paper.style.width = w + 'px'; paper.style.minHeight = h + 'px';
+  }
+}
+
+function applyPaperSize(size) {
+  const sizes = { a4: [794, 1123], letter: [816, 1056], legal: [816, 1344], a5: [559, 794] };
+  const [w, h] = sizes[size] || sizes.a4;
+  const orient = document.getElementById('orientSelect').value;
+  if (orient === 'landscape') {
+    paper.style.width = h + 'px'; paper.style.minHeight = w + 'px';
+  } else {
+    paper.style.width = w + 'px'; paper.style.minHeight = h + 'px';
+  }
+}
+
+function applyColumns(n) {
+  paper.style.columnCount = n;
+  paper.style.columnGap = '24px';
+}
+
+function applyPageBorder(type) {
+  const styles = { none:'none', thin:'1px solid #999', medium:'2px solid #666', thick:'3px solid #333', double:'4px double #666' };
+  paper.style.border = styles[type] || 'none';
+  paper.style.boxShadow = type !== 'none' ? 'none' : '0 2px 12px rgba(0,0,0,0.18)';
+}
+
+// ── Zoom ──
+function applyZoom(val) {
+  currentZoom = parseInt(val);
+  paper.style.transform = 'scale(' + (currentZoom / 100) + ')';
+  paper.style.transformOrigin = 'top center';
+  document.getElementById('zoomLabel').textContent = currentZoom;
+  document.getElementById('statZoom').textContent = currentZoom + '%';
+}
+
+function toggleFullscreen() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+// ══════════════════════════════════════════════════════════
+// RIBBON TAB SWITCHING
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll('#ribbonTabs button').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('#ribbonTabs button').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ribbon-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    const panel = document.getElementById('panel-' + tab.dataset.tab);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+// ══════════════════════════════════════════════════════════
+// TOOLBAR STATE SYNC — highlight active formatting buttons
+// ══════════════════════════════════════════════════════════
+function updateToolbarState() {
+  try {
+    const cmds = { btnBold:'bold', btnItalic:'italic', btnUnderline:'underline', btnStrike:'strikeThrough' };
+    for (const [id, cmd] of Object.entries(cmds)) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', document.queryCommandState(cmd));
+    }
+    const aligns = { btnLeft:'justifyLeft', btnCenter:'justifyCenter', btnRight:'justifyRight', btnJustify:'justifyFull' };
+    for (const [id, cmd] of Object.entries(aligns)) {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('active', document.queryCommandState(cmd));
+    }
+    // Sync font name & size with current selection
+    const fn = document.queryCommandValue('fontName');
+    if (fn) {
+      const sel = document.getElementById('fontFamily');
+      for (let i = 0; i < sel.options.length; i++) {
+        if (sel.options[i].value.toLowerCase().includes(fn.replace(/"/g, '').toLowerCase())) {
+          sel.selectedIndex = i; break;
+        }
+      }
+    }
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════
+// STATUS BAR UPDATES
+// ══════════════════════════════════════════════════════════
+function updateStatus() {
+  const text = paper.innerText || '';
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const chars = text.length;
+  const pageHeight = paper.scrollHeight;
+  const onePageH = parseInt(paper.style.minHeight) || 1123;
+  const pages = Math.max(1, Math.ceil(pageHeight / onePageH));
+  document.getElementById('statWords').textContent = words;
+  document.getElementById('statChars').textContent = chars;
+  document.getElementById('statPage').textContent = pages;
+}
+
+// ══════════════════════════════════════════════════════════
+// SAVE / LOAD DRAFT
+// ══════════════════════════════════════════════════════════
+function getDraftKey() {
+  return 'novelgen_draft_' + (document.getElementById('docName').value || 'untitled');
+}
+
+function saveDraft() {
+  const data = {
+    name: document.getElementById('docName').value,
+    content: paper.innerHTML,
+    margin: currentMargin,
+    paperSize: document.getElementById('paperSelect').value,
+    orientation: document.getElementById('orientSelect').value,
+    lineSpacing: lineSpacing,
+    timestamp: new Date().toISOString()
+  };
+  localStorage.setItem(getDraftKey(), JSON.stringify(data));
+  let list = JSON.parse(localStorage.getItem('novelgen_drafts_list') || '[]');
+  const key = getDraftKey();
+  if (!list.includes(key)) list.push(key);
+  localStorage.setItem('novelgen_drafts_list', JSON.stringify(list));
+  localStorage.setItem('novelgen_last_draft', key);
+  isDirtyTulis = false;
+  showToast('✓ Draf berhasil disimpan!');
+}
+
+function loadDraft(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return false;
+  try {
+    const data = JSON.parse(raw);
+    document.getElementById('docName').value = data.name || 'Dokumen Tanpa Judul';
+    paper.innerHTML = data.content || '';
+    if (data.margin) { applyMargin(data.margin); document.getElementById('marginSelect').value = data.margin; }
+    if (data.paperSize) { document.getElementById('paperSelect').value = data.paperSize; applyPaperSize(data.paperSize); }
+    if (data.orientation) { document.getElementById('orientSelect').value = data.orientation; applyOrientation(data.orientation); }
+    if (data.lineSpacing) { lineSpacing = data.lineSpacing; paper.style.lineHeight = lineSpacing; }
+    updateStatus();
+    isDirtyTulis = false;
+    return true;
+  } catch(e) { return false; }
+}
+
+function openDraft() {
+  const list = JSON.parse(localStorage.getItem('novelgen_drafts_list') || '[]');
+  if (list.length === 0) { alert('Tidak ada draf tersimpan.'); return; }
+  const names = list.map((k, i) => {
+    const d = JSON.parse(localStorage.getItem(k) || '{}');
+    return (i + 1) + '. ' + (d.name || k);
+  }).join('\n');
+  const choice = prompt('Pilih nomor draf:\n\n' + names);
+  if (!choice) return;
+  const idx = parseInt(choice) - 1;
+  if (idx >= 0 && idx < list.length) loadDraft(list[idx]);
+  hideAllDropdowns();
+}
+
+function deleteDraft() {
+  if (!confirm('Hapus draf "' + document.getElementById('docName').value + '"?')) return;
+  const key = getDraftKey();
+  localStorage.removeItem(key);
+  let list = JSON.parse(localStorage.getItem('novelgen_drafts_list') || '[]');
+  list = list.filter(k => k !== key);
+  localStorage.setItem('novelgen_drafts_list', JSON.stringify(list));
+  newDocument();
+  showToast('Draf dihapus.');
+}
+
+function newDocument() {
+  paper.innerHTML = '';
+  document.getElementById('docName').value = 'Dokumen Tanpa Judul';
+  applyMargin(96);
+  applyPaperSize('a4');
+  applyOrientation('portrait');
+  document.getElementById('marginSelect').value = '96';
+  document.getElementById('paperSelect').value = 'a4';
+  document.getElementById('orientSelect').value = 'portrait';
+  paper.focus();
+  updateStatus();
+  hideAllDropdowns();
+  isDirtyTulis = false;
+}
+
+// ══════════════════════════════════════════════════════════
+// EXPORT FUNCTIONS
+// ══════════════════════════════════════════════════════════
+function exportFile() {
+  const name = document.getElementById('saveFileName').value || document.getElementById('docName').value || 'dokumen';
+  const format = document.getElementById('saveFormat').value;
+
+  if (format === 'txt') {
+    downloadBlob(paper.innerText, name + '.txt', 'text/plain');
+  } else if (format === 'html') {
+    const htmlContent = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + name + '</title><style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5;max-width:800px;margin:40px auto;padding:20px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #999;padding:6px}</style></head><body>' + paper.innerHTML + '</body></html>';
+    downloadBlob(htmlContent, name + '.html', 'text/html');
+  } else if (format === 'pdf') {
+    html2pdf().set({
+      margin: [10, 10, 10, 10], filename: name + '.pdf',
+      image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: document.getElementById('orientSelect').value === 'landscape' ? 'landscape' : 'portrait' }
+    }).from(paper).save();
+  } else if (format === 'docx') {
+    exportDOCX(name);
+  }
+  hideModal('saveAs');
+  showToast('File "' + name + '.' + format + '" sedang diunduh...');
+}
+
+function exportDOCX(name) {
+  const htmlContent = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset="utf-8"><style>body{font-family:Calibri,sans-serif;font-size:11pt;line-height:1.5}table{border-collapse:collapse}td,th{border:1px solid #999;padding:4px 8px}</style></head>
+<body>${paper.innerHTML}</body></html>`;
+  downloadBlob('\ufeff' + htmlContent, name + '.doc', 'application/msword');
+}
+
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Copy/Share helpers ──
+function copyToClipboard() {
+  navigator.clipboard.writeText(paper.innerText).then(() => showToast('Teks disalin!')).catch(() => showToast('Gagal menyalin.'));
+  hideModal('share');
+}
+function copyHTMLToClipboard() {
+  navigator.clipboard.writeText(paper.innerHTML).then(() => showToast('HTML disalin!')).catch(() => showToast('Gagal menyalin.'));
+  hideModal('share');
+}
+
+// ══════════════════════════════════════════════════════════
+// FIND & REPLACE
+// ══════════════════════════════════════════════════════════
+function findAndHighlight() {
+  const q = document.getElementById('findText').value;
+  if (!q) return;
+  paper.innerHTML = paper.innerHTML.replace(/<mark class="fr-hl"[^>]*>(.*?)<\/mark>/gi, '$1');
+  const regex = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  // Only replace inside text nodes, not inside tags
+  const walker = document.createTreeWalker(paper, NodeFilter.SHOW_TEXT);
+  let count = 0;
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    if (regex.test(node.textContent)) {
+      const span = document.createElement('span');
+      span.innerHTML = node.textContent.replace(regex, '<mark class="fr-hl" style="background:#fde047;padding:0 2px;border-radius:2px">$1</mark>');
+      node.parentNode.replaceChild(span, node);
+      count += (span.querySelectorAll('mark.fr-hl') || []).length;
+    }
+    regex.lastIndex = 0;
+  });
+  showToast(count + ' ditemukan');
+}
+
+function findAndReplace() {
+  const q = document.getElementById('findText').value;
+  const r = document.getElementById('replaceText').value;
+  if (!q) return;
+  paper.innerHTML = paper.innerHTML.replace(/<mark class="fr-hl"[^>]*>(.*?)<\/mark>/gi, '$1');
+  const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  const count = (paper.innerText.match(regex) || []).length;
+  // Use tree walker for safe replacement
+  const walker = document.createTreeWalker(paper, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    if (regex.test(node.textContent)) {
+      node.textContent = node.textContent.replace(regex, r);
+    }
+    regex.lastIndex = 0;
+  });
+  showToast(count + ' diganti');
+  updateStatus();
+}
+
+// ── Word Count Detail ──
+function showWordCount() {
+  const text = paper.innerText || '';
+  const words = text.trim().split(/\s+/).filter(w => w.length > 0).length;
+  const chars = text.length;
+  const charsNoSpace = text.replace(/\s/g, '').length;
+  const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0).length;
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0).length;
+  const lines = text.split('\n').length;
+  document.getElementById('wordCountGrid').innerHTML = `
+    <div style="background:#f0f4ff;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#0058bc">${words}</div><div style="font-size:11px;color:#717786">Kata</div></div>
+    <div style="background:#f0fdf4;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#27c93f">${chars}</div><div style="font-size:11px;color:#717786">Karakter</div></div>
+    <div style="background:#fef9c3;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#ca8a04">${charsNoSpace}</div><div style="font-size:11px;color:#717786">Tanpa Spasi</div></div>
+    <div style="background:#fce7f3;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#be185d">${paragraphs}</div><div style="font-size:11px;color:#717786">Paragraf</div></div>
+    <div style="background:#ede9fe;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#7c3aed">${sentences}</div><div style="font-size:11px;color:#717786">Kalimat</div></div>
+    <div style="background:#e0f2fe;padding:12px;border-radius:8px;text-align:center"><div style="font-size:24px;font-weight:700;color:#0284c7">${lines}</div><div style="font-size:11px;color:#717786">Baris</div></div>`;
+  showModal('wordCount');
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL & DROPDOWN HELPERS
+// ══════════════════════════════════════════════════════════
+function showModal(name) {
+  const modalEl = document.getElementById('modal-' + name);
+  if (!modalEl) return;
+  modalEl.classList.add('show');
+  hideAllDropdowns(); hideCtx();
+  if (name === 'saveAs') document.getElementById('saveFileName').value = document.getElementById('docName').value;
+  if (name === 'macShortcuts') {
+    renderMacShortcuts();
+    setTimeout(() => {
+      const searchInp = document.getElementById('shortcutSearchInput');
+      if (searchInp) searchInp.focus();
+    }, 100);
+  }
+}
+function hideModal(name) { document.getElementById('modal-' + name).classList.remove('show'); }
+function hideAllDropdowns() { document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('show')); }
+function hideCtx() { ctxMenu.classList.remove('show'); }
+
+// ── Toast ──
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#1a1c1d;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.2);opacity:0;transition:opacity .3s;pointer-events:none';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 2500);
+}
+
+// ══════════════════════════════════════════════════════════
+// KEYBOARD SHORTCUTS (Mac ⌘ & Windows Ctrl)
+// ══════════════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  const mod = e.ctrlKey || e.metaKey; // Handles both Mac (⌘ Command) and Windows/Linux (Ctrl)
+  const key = e.key ? e.key.toLowerCase() : '';
+  const code = e.code || '';
+  const activeEl = document.activeElement;
+  const isInputTarget = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable === false && activeEl !== document.body && activeEl !== paper);
+
+  if (mod) {
+    const isS = key === 's' || code === 'KeyS';
+    const isB = key === 'b' || code === 'KeyB';
+    const isI = key === 'i' || code === 'KeyI';
+    const isU = key === 'u' || code === 'KeyU';
+    const isZ = key === 'z' || code === 'KeyZ';
+    const isY = key === 'y' || code === 'KeyY';
+    const isF = key === 'f' || code === 'KeyF';
+    const isD = key === 'd' || code === 'KeyD';
+    const isE = key === 'e' || code === 'KeyE';
+    const isL = key === 'l' || code === 'KeyL';
+    const isR = key === 'r' || code === 'KeyR';
+    const isJ = key === 'j' || code === 'KeyJ';
+    const isA = key === 'a' || code === 'KeyA';
+    const isC = key === 'c' || code === 'KeyC';
+    const isV = key === 'v' || code === 'KeyV';
+    const isX = key === 'x' || code === 'KeyX';
+    const isN = key === 'n' || code === 'KeyN';
+    const isO = key === 'o' || code === 'KeyO';
+    const isP = key === 'p' || code === 'KeyP';
+    const isW = key === 'w' || code === 'KeyW';
+    const isH = key === 'h' || code === 'KeyH';
+
+    // ── Save (Cmd+S / Ctrl+S) ──
+    if (isS) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.shiftKey) showModal('saveAs');
+      else saveDraft();
+      return;
+    }
+
+    // ── Find (Cmd+F) & Replace (Shift+Cmd+H) ──
+    if (isF) {
+      e.preventDefault();
+      showModal('findReplace');
+      setTimeout(() => {
+        const inp = document.getElementById('findText');
+        if (inp) { inp.focus(); inp.select(); }
+      }, 50);
+      return;
+    }
+    if (isH && e.shiftKey) {
+      e.preventDefault();
+      showModal('findReplace');
+      setTimeout(() => {
+        const inp = document.getElementById('replaceText');
+        if (inp) { inp.focus(); inp.select(); }
+      }, 50);
+      return;
+    }
+
+    // ── File & Dokumen (Cmd+N / O / P / W) ──
+    // Catatan: Cmd+N (jendela baru) dan Cmd+W (tutup tab) direservasi browser/OS di
+    // sebagian besar browser desktop dan mungkin tidak bisa di-override sepenuhnya.
+    if (isN) {
+      e.preventDefault();
+      if (!isDirtyTulis || confirm('Buat dokumen baru? Perubahan yang belum disimpan akan hilang.')) newDocument();
+      return;
+    }
+    if (isO) { e.preventDefault(); openDraft(); return; }
+    if (isP) { e.preventDefault(); window.print(); return; }
+    if (isW) {
+      e.preventDefault();
+      if (!isDirtyTulis || confirm('Tutup dokumen ini? Perubahan yang belum disimpan akan hilang.')) newDocument();
+      return;
+    }
+    // Cmd+Q (Keluar) sengaja tidak di-bind: shortcut ini dikunci sistem operasi
+    // untuk keluar dari browser dan tidak bisa diintersep oleh halaman web.
+
+    // If typing in input box (e.g. document name or find input), allow standard input shortcuts
+    if (isInputTarget && activeEl !== paper) {
+      return;
+    }
+
+    // Ensure paper has focus for formatting shortcuts
+    if (document.activeElement !== paper) {
+      paper.focus();
+    }
+
+    // ── Select All (Cmd+A) / Komentar Baru (Option+Cmd+A) ──
+    if (isA) {
+      e.preventDefault();
+      if (e.altKey) { fiturBelumTersedia('Komentar Baru'); return; }
+      document.execCommand('selectAll', false, null);
+      return;
+    }
+
+    // ── Cut (Cmd+X) / Strikethrough (Shift+Cmd+X) ──
+    if (isX) {
+      if (e.shiftKey) { e.preventDefault(); doCmd('strikeThrough'); return; }
+      return; // Cmd+X: browser handles cut natively
+    }
+
+    // ── Paste (Cmd+V) / Paste Tanpa Format (Option+Shift+Cmd+V) ──
+    if (isV) {
+      if (e.altKey && e.shiftKey) { e.preventDefault(); pasteTanpaFormat(); return; }
+      return; // Cmd+V: browser handles paste natively
+    }
+
+    // ── Copy (Cmd+C, native) ──
+    if (isC) { return; }
+
+    // ── Formatting Shortcuts ──
+    if (isB) { e.preventDefault(); doCmd('bold'); return; }
+    if (isI) { e.preventDefault(); doCmd('italic'); return; }
+    if (isU) { e.preventDefault(); doCmd('underline'); return; }
+    if (isD) { e.preventDefault(); doCmd('strikeThrough'); return; }
+    if (isZ) { e.preventDefault(); doCmd(e.shiftKey ? 'redo' : 'undo'); return; }
+    if (isY) { e.preventDefault(); doCmd('redo'); return; }
+
+    // ── Superscript (Cmd+Shift+=) / Subscript (Cmd+=) ──
+    if (e.key === '+') { e.preventDefault(); doCmd('superscript'); return; }
+    if (e.key === '=') { e.preventDefault(); doCmd('subscript'); return; }
+
+    // ── Perbesar (Cmd+Shift+>) / Perkecil (Cmd+Shift+<) Font ──
+    if (e.key === '>') { e.preventDefault(); stepFontSize(1); return; }
+    if (e.key === '<') { e.preventDefault(); stepFontSize(-1); return; }
+
+    // ── Heading & Style (Option+Cmd+1/2/3/0) ──
+    if (e.altKey && (e.key === '1' || e.key === '2' || e.key === '3' || e.key === '0')) {
+      e.preventDefault();
+      const map = { '1': ['h1', 'Judul 1'], '2': ['h2', 'Judul 2'], '3': ['h3', 'Judul 3'], '0': ['p', 'Normal'] };
+      const [tag, label] = map[e.key];
+      applyHeadingShortcut(tag, label);
+      return;
+    }
+
+    // ── Indent (Cmd+]) / Outdent (Cmd+[) ──
+    if (e.key === ']') { e.preventDefault(); doCmd('indent'); return; }
+    if (e.key === '[') { e.preventDefault(); doCmd('outdent'); return; }
+
+    // ── Spasi Baris (Cmd+1 / Cmd+2 / Cmd+5) ──
+    // Catatan: sebagian browser (mis. Chrome) mereservasi Cmd+1..9 untuk pindah tab
+    // sehingga kombinasi ini bisa tidak berfungsi tergantung browser.
+    if (!e.altKey && (e.key === '1' || e.key === '2' || e.key === '5')) {
+      e.preventDefault();
+      const map = { '1': 1, '2': 2, '5': 1.5 };
+      setLineSpacingShortcut(map[e.key]);
+      return;
+    }
+
+    // ── Alignment / Track Changes (Shift+Cmd+E) ──
+    if (isE) {
+      e.preventDefault();
+      if (e.shiftKey) { fiturBelumTersedia('Track Changes'); return; }
+      doCmd('justifyCenter');
+      return;
+    }
+    if (isL) { e.preventDefault(); doCmd('justifyLeft'); return; }
+    if (isR) { e.preventDefault(); doCmd('justifyRight'); return; }
+    if (isJ) { e.preventDefault(); doCmd('justifyFull'); return; }
+
+    // ── Cek Ejaan (Cmd+;) ──
+    if (e.key === ';') { e.preventDefault(); toggleSpellcheckPaper(); return; }
+  }
+
+  // ── Tab Key (Indent / Outdent) ──
+  if (e.key === 'Tab') {
+    if (!isInputTarget || activeEl === paper) {
+      e.preventDefault();
+      if (e.shiftKey) doCmd('outdent');
+      else doCmd('indent');
+    }
+  }
+
+  // ── Escape Key (Close Modals) ──
+  if (e.key === 'Escape') {
+    hideCtx();
+    document.querySelectorAll('.modal-overlay.show').forEach(m => m.classList.remove('show'));
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+// RIGHT-CLICK CONTEXT MENU
+// ══════════════════════════════════════════════════════════
+paper.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  ctxMenu.style.top = Math.min(e.clientY, window.innerHeight - 300) + 'px';
+  ctxMenu.style.left = Math.min(e.clientX, window.innerWidth - 220) + 'px';
+  ctxMenu.classList.add('show');
+});
+
+// ══════════════════════════════════════════════════════════
+// EVENT LISTENERS & CLIPBOARD FEEDBACK
+// ══════════════════════════════════════════════════════════
+paper.addEventListener('input', () => {
+  isDirtyTulis = true;
+  updateStatus();
+  updateToolbarState();
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => saveDraft(), 30000);
+});
+
+window.addEventListener('beforeunload', (e) => {
+  if (isDirtyTulis) {
+    e.preventDefault();
+    e.returnValue = 'Ada perubahan yang belum tersimpan. Yakin ingin meninggalkan halaman?';
+  }
+});
+
+paper.addEventListener('copy', () => {
+  showToast('Teks disalin ke papan klip');
+});
+
+paper.addEventListener('cut', () => {
+  setTimeout(() => updateStatus(), 50);
+  showToast('Teks dipotong');
+});
+
+paper.addEventListener('paste', () => {
+  setTimeout(() => {
+    updateStatus();
+    updateToolbarState();
+  }, 50);
+});
+
+// Track formatting state on selection change
+document.addEventListener('selectionchange', () => {
+  if (document.activeElement === paper || paper.contains(document.activeElement)) {
+    updateToolbarState();
+  }
+});
+
+// Update toolbar on mouse/key actions in paper
+paper.addEventListener('mouseup', updateToolbarState);
+paper.addEventListener('keyup', updateToolbarState);
+
+// Close dropdowns & context menu on outside click
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.dropdown-menu') && !e.target.closest('[data-dropdown]')) hideAllDropdowns();
+  if (!e.target.closest('.context-menu')) hideCtx();
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('show'); });
+});
+
+// ══════════════════════════════════════════════════════════
+// CLIPBOARD BUTTONS (ribbon) — use Clipboard API properly
+// ══════════════════════════════════════════════════════════
+document.querySelectorAll('[onclick="doCmd(\'cut\')"]').forEach(btn => {
+  btn.onclick = () => {
+    paper.focus();
+    document.execCommand('cut');
+  };
+});
+document.querySelectorAll('[onclick="doCmd(\'copy\')"]').forEach(btn => {
+  btn.onclick = () => {
+    paper.focus();
+    document.execCommand('copy');
+  };
+});
+document.querySelectorAll('[onclick="doCmd(\'paste\')"]').forEach(btn => {
+  btn.onclick = () => {
+    paper.focus();
+    navigator.clipboard.readText().then(text => {
+      document.execCommand('insertText', false, text);
+    }).catch(() => {
+      document.execCommand('paste');
+    });
+  };
+});
+
+// ══════════════════════════════════════════════════════════
+// INIT & FOCUS PRESERVATION
+// Prevent ribbon buttons from stealing focus from paper canvas
+// ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// ACTIVE DNA STYLE INTEGRATION
+// ══════════════════════════════════════════════════════════
+function checkActiveDNA() {
+  const raw = localStorage.getItem('novelgen_active_dna');
+  if (!raw) return;
+  try {
+    const dna = JSON.parse(raw);
+    const banner = document.getElementById('dnaActiveBanner');
+    const titleEl = document.getElementById('dnaBannerTitle');
+    if (banner && titleEl) {
+      banner.classList.remove('hidden');
+      const toneStr = (dna.tone || []).join(', ');
+      titleEl.textContent = `${dna.title || 'Gaya Referensi Kustom'} — ${toneStr || 'Sastrawi & Metaforis'}`;
+    }
+  } catch(e) {}
+}
+
+function removeActiveDNA() {
+  localStorage.removeItem('novelgen_active_dna');
+  localStorage.removeItem('novelgen_active_dna_applied');
+  const banner = document.getElementById('dnaActiveBanner');
+  if (banner) banner.classList.add('hidden');
+  showToast('DNA Gaya Penulisan dilepas.');
+}
+
+function insertDNASampleText() {
+  const raw = localStorage.getItem('novelgen_active_dna');
+  let title = 'Referensi Gaya';
+  try { title = JSON.parse(raw).title || title; } catch(e) {}
+
+  const sample = `<p><b>[Gaya Penulisan Terekstrak: ${title}]</b></p><p>Malam merambat perlahan di atas lorong-lorong batu tua, membawa serta kabut tipis yang beraroma kenangan mendingin. Di bawah pendar rembulan yang redup, ia melangkah tanpa suara—menatap bayang-bayang masa lalu yang tersimpan di balik pintu besi yang terkunci rapat.</p><p><br></p>`;
+  paper.focus();
+  document.execCommand('insertHTML', false, sample);
+  showToast('✓ Paragraf sampel gaya DNA berhasil disisipkan!');
+}
+
+// ══════════════════════════════════════════════════════════
+// DNA-POWERED NOVEL GENERATION
+// ══════════════════════════════════════════════════════════
+
+function toggleDNANovelPanel() {
+  const panel = document.getElementById('dnaNovelPanel');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    document.getElementById('dnaNovelJudul').focus();
+  }
+}
+
+let dnaGenAbortController = null;
+
+async function generateNovelWithDNA() {
+  const raw = localStorage.getItem('novelgen_active_dna');
+  if (!raw) {
+    showToast('Harap ekstrak DNA terlebih dahulu dari Tiru Gaya.', 'error');
+    return;
+  }
+
+  let dnaProfile;
+  try { dnaProfile = JSON.parse(raw); } catch(e) {
+    showToast('Data DNA tidak valid. Silakan ekstrak ulang.', 'error');
+    return;
+  }
+
+  const judul = document.getElementById('dnaNovelJudul').value.trim() || 'Novel Baru';
+  const genre = document.getElementById('dnaNovelGenre').value;
+  const sinopsis = document.getElementById('dnaNovelSinopsis').value.trim();
+  const jumlahKata = document.getElementById('dnaNovelKata').value;
+
+  if (!sinopsis) {
+    showToast('Harap isi sinopsis/ide cerita terlebih dahulu.', 'error');
+    document.getElementById('dnaNovelSinopsis').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btnStartDNAGen');
+  const statusEl = document.getElementById('dnaGenStatus');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="ph ph-spinner" style="font-size:16px;animation:spin 1s linear infinite"></i> AI Sedang Menulis...';
+  btn.style.opacity = '0.7';
+  statusEl.style.display = 'block';
+
+  // Clear paper and set title
+  paper.innerHTML = '';
+  const docName = document.getElementById('docName');
+  if (docName) docName.value = judul;
+
+  // Close panel
+  document.getElementById('dnaNovelPanel').classList.add('hidden');
+
+  // Scroll to paper
+  paper.scrollIntoView({ behavior: 'smooth' });
+
+  dnaGenAbortController = new AbortController();
+
+  try {
+    const res = await fetch('/api/generate-with-dna', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        dna_profile: dnaProfile,
+        judul,
+        genre,
+        sinopsis,
+        jumlah_kata: parseInt(jumlahKata),
+        model_ai: 'openrouter/auto'
+      }),
+      signal: dnaGenAbortController.signal
+    });
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let fullText = '';
+    let wordCount = 0;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const dataStr = trimmed.slice(6).trim();
+          if (dataStr === '[DONE]') continue;
+          try {
+            const data = JSON.parse(dataStr);
+            if (data.text) {
+              fullText += data.text;
+              wordCount = fullText.split(/\s+/).filter(w => w.length > 0).length;
+
+              // Convert text to HTML paragraphs
+              const htmlContent = fullText
+                .split(/\n\n+/)
+                .map(p => {
+                  const trimmedP = p.trim();
+                  if (!trimmedP) return '';
+                  // Detect chapter titles (short lines, often bold)
+                  if (trimmedP.length < 80 && (trimmedP.startsWith('Bab ') || trimmedP.startsWith('BAB ') || /^[A-Z\s]{5,}$/.test(trimmedP) || /^(Prolog|Epilog|Bagian)/i.test(trimmedP))) {
+                    return `<h2 style="text-align:center;font-weight:bold;margin:24px 0 16px">${trimmedP}</h2>`;
+                  }
+                  // Detect the novel title (first very short line)
+                  if (fullText.indexOf(trimmedP) === 0 && trimmedP.length < 100 && !trimmedP.includes('.')) {
+                    return `<h1 style="text-align:center;font-weight:bold;font-size:18pt;margin-bottom:24px">${trimmedP}</h1>`;
+                  }
+                  return `<p>${trimmedP}</p>`;
+                })
+                .filter(Boolean)
+                .join('');
+
+              paper.innerHTML = htmlContent;
+
+              // Update status
+              statusEl.innerHTML = `<span class="animate-pulse">⚡ AI Menulis... ${wordCount.toLocaleString('id-ID')} kata</span>`;
+
+              // Auto-scroll to bottom of paper
+              const container = document.getElementById('paperContainer');
+              if (container) container.scrollTop = container.scrollHeight;
+            }
+            if (data.error) {
+              showToast('Error: ' + data.error, 'error');
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
+    // Final status
+    statusEl.innerHTML = `<span style="color:#34d399">✅ Selesai! ${wordCount.toLocaleString('id-ID')} kata ditulis dengan gaya DNA "${dnaProfile.title || 'Referensi'}"</span>`;
+    showToast(`✓ Novel "${judul}" berhasil ditulis! ${wordCount.toLocaleString('id-ID')} kata dengan gaya DNA.`);
+    updateStatus();
+
+    // Auto-save
+    const draftKey = 'novel_dna_' + Date.now();
+    localStorage.setItem(draftKey, JSON.stringify({
+      name: judul,
+      html: paper.innerHTML,
+      savedAt: new Date().toISOString()
+    }));
+    localStorage.setItem('novelgen_last_draft', draftKey);
+
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      showToast('Gagal: ' + err.message, 'error');
+      statusEl.innerHTML = `<span style="color:#f87171">❌ Gagal: ${err.message}</span>`;
+    }
+  }
+
+  // Reset button
+  btn.disabled = false;
+  btn.innerHTML = '<i class="ph ph-pen-nib" style="font-size:16px"></i> Mulai Tulis Novel dengan DNA AI';
+  btn.style.opacity = '1';
+  dnaGenAbortController = null;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Prevent ribbon buttons & toolbar from blurring paper selection
+  document.querySelectorAll('.ribbon-panel button, .ribbon-tabs button, .title-bar button:not(.doc-name)').forEach(btn => {
+    btn.addEventListener('mousedown', (e) => {
+      // Allow button click action but preserve text selection/focus
+      e.preventDefault();
+    });
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const draftKey = params.get('draft');
+  if (draftKey) {
+    loadDraft(draftKey);
+  } else if (params.get('new') !== null) {
+    paper.focus();
+  } else {
+    const lastKey = localStorage.getItem('novelgen_last_draft');
+    if (lastKey && loadDraft(lastKey)) { /* loaded */ }
+    else paper.focus();
+  }
+  updateStatus();
+
+  // Auto-open MacBook Shortcuts modal if requested via URL
+  if (params.get('shortcuts') !== null) {
+    showModal('macShortcuts');
+  }
+
+  // Check if active DNA profile was applied from mimicry.html
+  checkActiveDNA();
+
+  // Ensure paper is always focusable and clickable
+  container.addEventListener('click', (e) => {
+    if (e.target === container) paper.focus();
+  });
+});
+</script>
+</body>
+</html>

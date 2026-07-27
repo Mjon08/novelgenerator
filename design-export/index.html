@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beranda — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<style>
+  /* ── Dashboard-specific ─────────────────────────────────── */
+  .welcome-header {
+    padding: 36px 32px 24px;
+    border-bottom: 1px solid var(--color-outline-variant);
+    background: var(--color-surface-lowest);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .welcome-title {
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+    line-height: 1.25;
+  }
+  .welcome-date {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-on-surface-variant);
+    letter-spacing: 0.04em;
+  }
+  .welcome-sub { font-size: 0.9rem; color: var(--color-on-surface-variant); }
+
+  /* Quick action cards */
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .quick-card {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-lg);
+    padding: 22px 16px;
+    text-align: center;
+    text-decoration: none;
+    color: var(--color-on-surface);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow-soft);
+  }
+  .quick-card:hover {
+    border-color: var(--color-primary-container);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .quick-card:hover .quick-card-icon-wrap {
+    background: var(--color-primary);
+    color: white;
+  }
+  .quick-card-icon-wrap {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: 1px solid var(--color-outline-variant);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-primary);
+    transition: background 0.2s, color 0.2s;
+  }
+  .quick-card-label {
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+  }
+  .quick-card-sub { font-size: 0.75rem; color: var(--color-on-surface-variant); }
+
+  /* Novel cards */
+  .novel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+  .novel-card {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-outline-variant);
+    border-left: 4px solid var(--color-primary-container);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .novel-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .novel-card-title {
+    font-family: var(--font-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-on-surface);
+    margin-bottom: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    transition: color 0.15s;
+  }
+  .novel-card:hover .novel-card-title { color: var(--color-primary); }
+  .novel-card-meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-on-surface-variant);
+    margin-bottom: 14px;
+    letter-spacing: 0.02em;
+  }
+  .novel-card-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* Jilid card */
+  .jilid-card {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+    box-shadow: var(--shadow-soft);
+  }
+  .jilid-card-title { font-size: 0.88rem; font-weight: 600; }
+
+  /* Command palette */
+  .cmd-palette {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(17,28,44,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 15vh;
+  }
+  .cmd-palette.open { display: flex; }
+  .cmd-box {
+    background: var(--color-surface-lowest);
+    border: 1px solid var(--color-primary-container);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    width: 100%;
+    max-width: 520px;
+    box-shadow: var(--shadow-md);
+  }
+  .cmd-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--color-outline-variant);
+    background: var(--color-surface-low);
+  }
+  .cmd-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    color: var(--color-on-surface);
+    outline: none;
+  }
+  .cmd-hint { font-family: var(--font-mono); font-size: 0.7rem; color: var(--color-outline); }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+
+    <!-- Welcome Header -->
+    <div class="welcome-header">
+      <h1 class="welcome-title">Selamat datang kembali.</h1>
+      <p class="welcome-sub">Meja tulis Anda sudah disiapkan. Mari lanjutkan kisah hari ini.</p>
+      <div class="welcome-date" id="tanggal-hari-ini"></div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- Stat Cards -->
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card skeleton-card" style="min-height:90px;">
+          <div class="skeleton skeleton-text w-40" style="height:1.75rem;"></div>
+          <div class="skeleton skeleton-text w-60"></div>
+        </div>
+        <div class="stat-card skeleton-card" style="min-height:90px;">
+          <div class="skeleton skeleton-text w-40" style="height:1.75rem;"></div>
+          <div class="skeleton skeleton-text w-60"></div>
+        </div>
+        <div class="stat-card skeleton-card" style="min-height:90px;">
+          <div class="skeleton skeleton-text w-40" style="height:1.75rem;"></div>
+          <div class="skeleton skeleton-text w-60"></div>
+        </div>
+        <div class="stat-card skeleton-card" style="min-height:90px;">
+          <div class="skeleton skeleton-text w-40" style="height:1.75rem;"></div>
+          <div class="skeleton skeleton-text w-60"></div>
+        </div>
+      </div>
+
+      <!-- Aksi Cepat -->
+      <div class="section-header mb-16">
+        <h2 class="section-title">Aksi Cepat</h2>
+        <span class="text-muted text-sm" style="font-family:var(--font-mono);">Ctrl+K</span>
+      </div>
+      <div class="quick-actions">
+        <div class="quick-card" onclick="window.location.href='generate.html'">
+          <div class="quick-card-icon-wrap">
+            <span class="material-symbols-outlined">post_add</span>
+          </div>
+          <div>
+            <div class="quick-card-label">Buat Novel Baru</div>
+            <div class="quick-card-sub">Generate dengan AI</div>
+          </div>
+        </div>
+        <div class="quick-card" onclick="window.location.href='mimicry.html'">
+          <div class="quick-card-icon-wrap">
+            <span class="material-symbols-outlined">person_play</span>
+          </div>
+          <div>
+            <div class="quick-card-label">Tiru Gaya Penulis</div>
+            <div class="quick-card-sub">Ekstrak DNA Novel</div>
+          </div>
+        </div>
+        <div class="quick-card" onclick="window.location.href='library.html'">
+          <div class="quick-card-icon-wrap">
+            <span class="material-symbols-outlined">library_books</span>
+          </div>
+          <div>
+            <div class="quick-card-label">Perpustakaan</div>
+            <div class="quick-card-sub">Novel & Referensi</div>
+          </div>
+        </div>
+        <div class="quick-card" onclick="window.location.href='seri.html'">
+          <div class="quick-card-icon-wrap">
+            <span class="material-symbols-outlined">account_tree</span>
+          </div>
+          <div>
+            <div class="quick-card-label">Seri Novel</div>
+            <div class="quick-card-sub">Kelola multi-jilid</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lanjutkan Menulis -->
+      <div id="lanjutkan-section" style="display:none; margin-bottom:32px;">
+        <div class="section-header mb-16">
+          <h2 class="section-title">Lanjutkan Menulis</h2>
+        </div>
+        <div id="lanjutkan-list"></div>
+      </div>
+
+      <!-- Novel Terbaru -->
+      <div class="section-header mb-16">
+        <h2 class="section-title">Novel Terbaru</h2>
+        <a href="library.html" class="btn btn-ghost btn-sm">
+          Lihat Semua
+          <span class="material-symbols-outlined" style="font-size:16px;">arrow_forward</span>
+        </a>
+      </div>
+      <div id="novel-terbaru-grid" class="novel-grid"></div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Command Palette -->
+<div class="cmd-palette" id="cmd-palette" onclick="closeCmdPalette(event)">
+  <div class="cmd-box">
+    <div class="cmd-header">
+      <span class="material-symbols-outlined" style="color:var(--color-outline);">search</span>
+      <input class="cmd-input" id="cmd-input" placeholder="Cari halaman atau fitur..." autocomplete="off" />
+      <span class="cmd-hint">Enter ↵</span>
+    </div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('dashboard');
+
+  // Tanggal Indonesia
+  const tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('tanggal-hari-ini').textContent = tgl;
+
+  // Load dashboard stats
+  async function loadStats() {
+    try {
+      const data = await fetch('/api/stats/dashboard').then(r => r.json());
+      const grid = document.getElementById('stat-grid');
+      grid.innerHTML = `
+        <div class="stat-card">
+          <span class="stat-icon material-symbols-outlined">edit_note</span>
+          <div class="stat-value">${data.total_novels || 0}</div>
+          <div class="stat-label">Total Novel</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon material-symbols-outlined">text_fields</span>
+          <div class="stat-value">${formatAngka(data.total_kata || 0)}</div>
+          <div class="stat-label">Total Kata</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon material-symbols-outlined">star</span>
+          <div class="stat-value">${data.avg_skor || 0}</div>
+          <div class="stat-label">Rata-rata Skor</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-icon material-symbols-outlined">account_tree</span>
+          <div class="stat-value">${data.seri_aktif || 0}</div>
+          <div class="stat-label">Seri Aktif</div>
+        </div>
+      `;
+
+      // Lanjutkan menulis
+      if (data.jilid_sedang && data.jilid_sedang.length > 0) {
+        document.getElementById('lanjutkan-section').style.display = 'block';
+        const list = document.getElementById('lanjutkan-list');
+        list.innerHTML = data.jilid_sedang.map(j => `
+          <div class="jilid-card">
+            <div>
+              <div class="jilid-card-title">${j.seri_judul} — Jilid ${j.nomor}: ${j.judul}</div>
+              <span class="badge badge-info mt-8">Sedang Ditulis</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window.location.href='generate.html?seri_id=${j.seri_id}&jilid_id=${j.id}'">
+              <span class="material-symbols-outlined" style="font-size:14px;">play_arrow</span>
+              Lanjutkan
+            </button>
+          </div>
+        `).join('');
+      }
+
+      // Novel terbaru
+      const grid2 = document.getElementById('novel-terbaru-grid');
+      if (!data.novel_terbaru || data.novel_terbaru.length === 0) {
+        grid2.innerHTML = `
+          <div class="empty-state" style="grid-column:1/-1;">
+            <div class="empty-state-icon">
+              <span class="material-symbols-outlined" style="font-size:2.5rem;color:var(--color-outline-variant);">auto_stories</span>
+            </div>
+            <div class="empty-state-title">Belum ada novel</div>
+            <div class="empty-state-desc">Mulai menulis novel pertama kamu dengan bantuan AI</div>
+            <a href="generate.html" class="btn btn-primary empty-state-cta">
+              <span class="material-symbols-outlined" style="font-size:16px;">edit_note</span>
+              Buat Novel Sekarang
+            </a>
+          </div>
+        `;
+      } else {
+        grid2.innerHTML = data.novel_terbaru.map(n => `
+          <div class="novel-card">
+            <div class="novel-card-title">${n.judul || 'Tanpa Judul'}</div>
+            <div class="novel-card-meta">${formatAngka(n.jumlah_kata || 0)} kata · ${n.jumlah_bab || 0} bab · ${formatTanggal(n.terakhir_diedit)}</div>
+            <div class="novel-card-actions">
+              <button class="btn btn-primary btn-sm" onclick="window.location.href='editor.html?id=${n.id}'">
+                <span class="material-symbols-outlined" style="font-size:13px;">history_edu</span> Editor
+              </button>
+              ${n.novel_id ? `<button class="btn btn-secondary btn-sm" onclick="window.location.href='evaluasi.html?novel_id=${n.novel_id}'">
+                <span class="material-symbols-outlined" style="font-size:13px;">analytics</span> Evaluasi
+              </button>` : ''}
+              <button class="btn btn-secondary btn-sm" onclick="window.location.href='ekspor.html?dok_id=${n.id}'">
+                <span class="material-symbols-outlined" style="font-size:13px;">file_export</span> Ekspor
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch(err) {
+      toast.error('Gagal memuat data dashboard: ' + err.message);
+    }
+  }
+
+  function formatAngka(n) {
+    if (n >= 1000000) return (n/1000000).toFixed(1) + 'jt';
+    if (n >= 1000) return (n/1000).toFixed(1) + 'rb';
+    return String(n);
+  }
+
+  function formatTanggal(dt) {
+    if (!dt) return '-';
+    return new Date(dt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  // Command Palette
+  function openCmdPalette() {
+    document.getElementById('cmd-palette').classList.add('open');
+    document.getElementById('cmd-input').focus();
+  }
+
+  function closeCmdPalette(e) {
+    if (e.target.id === 'cmd-palette') {
+      document.getElementById('cmd-palette').classList.remove('open');
+    }
+  }
+
+  const PAGES = [
+    { label: 'Dashboard', href: 'index.html' },
+    { label: 'Buat Novel', href: 'generate.html' },
+    { label: 'Tiru Gaya', href: 'mimicry.html' },
+    { label: 'Perpustakaan', href: 'library.html' },
+    { label: 'Editor Novel', href: 'editor.html' },
+    { label: 'Evaluasi', href: 'evaluasi.html' },
+    { label: 'Seri Novel', href: 'seri.html' },
+    { label: 'Ekspor', href: 'ekspor.html' },
+    { label: 'Pengaturan', href: 'pengaturan.html' },
+  ];
+
+  document.getElementById('cmd-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.getElementById('cmd-palette').classList.remove('open');
+    } else if (e.key === 'Enter') {
+      const q = e.target.value.trim().toLowerCase();
+      const match = PAGES.find(p => p.label.toLowerCase().includes(q) || p.href.includes(q));
+      if (match) window.location.href = match.href;
+      else toast.info('Halaman tidak ditemukan');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      e.preventDefault();
+      openCmdPalette();
+    }
+  });
+
+  loadStats();
+</script>
+</body>
+</html>

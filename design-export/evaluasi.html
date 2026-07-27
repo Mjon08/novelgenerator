@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluasi — novelGENerator</title>
+<link rel="stylesheet" href="shared/shared.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  .grade-badge { display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; font-weight: 700; font-size: 1.2rem; border: 3px solid; flex-shrink: 0; font-family: var(--font-mono); }
+  .grade-A { background: rgba(45,106,79,0.12); color: #2d6a4f; border-color: #2d6a4f; }
+  .grade-B { background: rgba(29,78,216,0.12); color: #1d4ed8; border-color: #1d4ed8; }
+  .grade-C { background: rgba(180,83,9,0.12); color: #b45309; border-color: #b45309; }
+  .grade-D { background: rgba(186,26,26,0.12); color: var(--color-error); border-color: var(--color-error); }
+  .grade-F { background: rgba(186,26,26,0.15); color: var(--color-error); border-color: var(--color-error); }
+  .score-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .score-label { font-size: 0.82rem; color: var(--color-on-surface-variant); min-width: 140px; }
+  .score-bar-wrap { flex: 1; background: var(--color-surface-low); border-radius: var(--radius-full); height: 8px; overflow: hidden; }
+  .score-bar { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-container)); width: 0%; transition: width 1s ease; border-radius: var(--radius-full); }
+  .score-num { min-width: 32px; text-align: right; font-size: 0.82rem; font-weight: 600; font-family: var(--font-mono); }
+  .radar-container { max-width: 400px; margin: 0 auto; }
+  .novels-table { width: 100%; border-collapse: collapse; }
+  .novels-table th { text-align: left; padding: 10px 12px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--color-on-surface-variant); border-bottom: 1px solid var(--color-outline-variant); font-weight: 600; }
+  .novels-table td { padding: 12px; border-bottom: 1px solid var(--color-outline-variant); font-size: 0.88rem; }
+  .novels-table tr:hover td { background: var(--color-surface-low); cursor: pointer; }
+  .grade-dist { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .grade-pill { padding: 6px 14px; border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .accordion-item { border: 1px solid var(--color-outline-variant); border-radius: var(--radius); overflow: hidden; }
+  .accordion-header { padding: 12px 16px; background: var(--color-surface-low); cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.88rem; font-weight: 600; user-select: none; }
+  .accordion-header:hover { background: var(--color-surface-container); }
+  .accordion-chevron { transition: transform 0.2s; }
+  .accordion-item.open .accordion-chevron { transform: rotate(180deg); }
+  .accordion-body { display: none; padding: 16px; background: var(--color-surface-lowest); }
+  .accordion-item.open .accordion-body { display: block; }
+</style>
+</head>
+<body>
+<div class="app" id="app-root">
+  <aside id="sidebar-container"></aside>
+  <main class="main-content">
+    <div id="page-wrap"></div>
+  </main>
+</div>
+
+<!-- Compare Modal -->
+<div class="modal-overlay" id="compare-modal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2>
+        <span class="material-symbols-outlined">analytics</span>
+        Bandingkan Novel
+      </h2>
+      <button class="modal-close" onclick="closeModal('compare-modal')">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="modal-body" id="compare-body"></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('compare-modal')">Tutup</button></div>
+  </div>
+</div>
+
+<script src="shared/sidebar.js"></script>
+<script src="shared/toast.js"></script>
+<script>
+  renderSidebar('evaluasi');
+
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+  const params = new URLSearchParams(location.search);
+  const novelId = params.get('novel_id');
+
+  const wrap = document.getElementById('page-wrap');
+
+  if (novelId) {
+    renderReportPage(novelId);
+  } else {
+    renderSummaryPage();
+  }
+
+  // ── REPORT PAGE ─────────────────────────────────────────
+
+  async function renderReportPage(nId) {
+    wrap.innerHTML = `
+      <div class="page-header">
+        <div class="breadcrumb">
+          <a href="index.html">Dashboard</a><span class="breadcrumb-sep">›</span>
+          <a href="evaluasi.html">Evaluasi</a><span class="breadcrumb-sep">›</span>
+          <span id="bc-title">Memuat…</span>
+        </div>
+        <h1 class="page-title">
+          <span class="material-symbols-outlined">analytics</span>
+          Laporan Evaluasi
+        </h1>
+      </div>
+      <div class="page-content">
+        <div id="report-loading">
+          <div class="skeleton-card mb-16"><div class="skeleton skeleton-text w-80" style="height:1.5rem;"></div><div class="skeleton skeleton-text w-60"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text w-40" style="height:3rem;"></div></div>
+        </div>
+        <div id="report-content" style="display:none;"></div>
+        <div id="report-none" style="display:none;"></div>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/eval/' + nId);
+      const data = await res.json();
+
+      document.getElementById('report-loading').style.display = 'none';
+      document.getElementById('report-content').style.display = '';
+
+      if (!data || data.error || !data.total_score) {
+        document.getElementById('report-none').style.display = '';
+        document.getElementById('report-none').innerHTML = `
+          <div class="card">
+            <div class="card-body" style="text-align:center; padding: 40px;">
+              <span class="material-symbols-outlined" style="font-size:48px; color:var(--color-primary); display:block; margin-bottom:12px;">analytics</span>
+              <h3 style="font-family:var(--font-serif); margin-bottom:8px;">Belum ada evaluasi untuk novel ini</h3>
+              <p style="color:var(--color-on-surface-variant); margin: 8px 0 20px;">Jalankan evaluasi untuk mendapatkan penilaian detail</p>
+              <button class="btn btn-primary" onclick="jalankanEval('${nId}')">
+                <span class="material-symbols-outlined">play_arrow</span> Jalankan Evaluasi
+              </button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      document.getElementById('bc-title').textContent = 'Novel #' + nId;
+
+      const gradeClass = 'grade-' + (data.grade || 'C').charAt(0);
+      const dims = [];
+      if (data.style_score) dims.push({ label: 'Gaya', score: data.style_score, json: data.style_json });
+      if (data.quality_score) dims.push({ label: 'Kualitas', score: data.quality_score, json: data.quality_json });
+      if (data.originality_score) dims.push({ label: 'Orisinalitas', score: data.originality_score, json: data.originality_json });
+
+      document.getElementById('report-content').innerHTML = `
+        <div class="card mb-20">
+          <div class="card-body">
+            <div class="flex items-center gap-16 mb-20" style="flex-wrap:wrap;">
+              <div class="grade-badge ${gradeClass}">${data.grade || 'C'}</div>
+              <div>
+                <div style="font-size:1.5rem; font-weight:700; font-family:var(--font-mono);">${data.total_score || 0}<span style="font-size:1rem; color:var(--color-on-surface-variant);">/100</span></div>
+                <div style="color:var(--color-on-surface-variant); font-size:0.88rem;">${data.verdict || 'Novel telah dievaluasi'}</div>
+              </div>
+            </div>
+            ${dims.map(d => `
+              <div class="score-row">
+                <div class="score-label">${d.label}</div>
+                <div class="score-bar-wrap"><div class="score-bar" style="width:${d.score}%"></div></div>
+                <div class="score-num">${d.score}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        ${dims.length > 1 ? `
+        <div class="card mb-20">
+          <div class="card-header"><h2 class="card-title">Radar Dimensi</h2></div>
+          <div class="card-body">
+            <div class="radar-container"><canvas id="radar-chart"></canvas></div>
+          </div>
+        </div>` : ''}
+
+        ${dims.map(d => {
+          let feedback = '';
+          try { const j = typeof d.json === 'string' ? JSON.parse(d.json) : d.json; feedback = j ? JSON.stringify(j, null, 2) : ''; } catch(e) {}
+          return feedback ? `
+            <div class="accordion-item mb-8" id="acc-${d.label}">
+              <div class="accordion-header" onclick="toggleAccordion('acc-${d.label}')">
+                <span>${d.label} — ${d.score}/100</span>
+                <span class="accordion-chevron material-symbols-outlined" style="font-size:18px;">expand_more</span>
+              </div>
+              <div class="accordion-body"><pre style="font-size:0.78rem; white-space:pre-wrap; font-family:var(--font-mono);">${feedback}</pre></div>
+            </div>
+          ` : '';
+        }).join('')}
+
+        <div class="action-bar mt-20">
+          <button class="btn btn-primary" onclick="jalankanEval('${nId}')">
+            <span class="material-symbols-outlined">refresh</span> Re-evaluasi
+          </button>
+          <button class="btn btn-secondary" onclick="window.location.href='/api/eval/${nId}/export'">
+            <span class="material-symbols-outlined">download</span> Unduh Laporan
+          </button>
+          <a href="library.html" class="btn btn-ghost">
+            <span class="material-symbols-outlined">arrow_back</span> Perpustakaan
+          </a>
+        </div>
+      `;
+
+      // Draw radar chart
+      if (dims.length > 1) {
+        const ctx = document.getElementById('radar-chart');
+        if (ctx) {
+          new Chart(ctx, {
+            type: 'radar',
+            data: {
+              labels: dims.map(d => d.label),
+              datasets: [{
+                label: 'Skor',
+                data: dims.map(d => d.score),
+                backgroundColor: 'rgba(59,102,98,0.15)',
+                borderColor: '#3b6662',
+                pointBackgroundColor: '#3b6662',
+              }]
+            },
+            options: {
+              scales: { r: { min: 0, max: 100, ticks: { color: '#717977', stepSize: 20 }, grid: { color: '#c0c8c6' }, pointLabels: { color: '#111c2c', font: { size: 12 } } } },
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+      }
+
+    } catch(err) {
+      document.getElementById('report-loading').style.display = 'none';
+      document.getElementById('report-none').style.display = '';
+      document.getElementById('report-none').innerHTML = `<div class="card"><div class="card-body"><p style="color:var(--color-error);">Gagal memuat evaluasi: ${err.message}</p></div></div>`;
+    }
+  }
+
+  async function jalankanEval(nId) {
+    try {
+      toast.info('Menjalankan evaluasi… ini mungkin membutuhkan beberapa menit');
+      const res = await fetch('/api/eval/run/' + nId, { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Evaluasi berhasil!');
+        renderReportPage(nId);
+      } else {
+        toast.error(data.error || 'Evaluasi gagal');
+      }
+    } catch(err) {
+      toast.error('Gagal menjalankan evaluasi: ' + err.message);
+    }
+  }
+
+  function toggleAccordion(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+
+  // ── SUMMARY PAGE ─────────────────────────────────────────
+
+  let allEvals = [];
+  let compareList = [];
+
+  async function renderSummaryPage() {
+    wrap.innerHTML = `
+      <div class="page-header">
+        <div class="breadcrumb"><a href="index.html">Dashboard</a><span class="breadcrumb-sep">›</span><span>Evaluasi</span></div>
+        <h1 class="page-title">
+          <span class="material-symbols-outlined">analytics</span>
+          Evaluasi Novel
+        </h1>
+        <p class="page-subtitle">Penilaian otomatis untuk Gaya, Kualitas, dan Orisinalitas</p>
+      </div>
+      <div class="page-content">
+        <div id="stats-panel" class="card mb-20" style="display:none;">
+          <div class="card-body">
+            <div class="stat-grid" id="eval-stats"></div>
+            <div class="grade-dist" id="grade-dist"></div>
+          </div>
+        </div>
+        <div class="section-header mb-16">
+          <h2 class="section-title">Daftar Novel</h2>
+          <div class="flex gap-8">
+            <button class="btn btn-secondary btn-sm" id="btn-compare" onclick="openCompareModal()" style="display:none;">
+              <span class="material-symbols-outlined">compare</span> Bandingkan
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0; overflow-x:auto;">
+            <table class="novels-table" id="eval-table">
+              <thead>
+                <tr>
+                  <th>Judul</th>
+                  <th>Skor</th>
+                  <th>Nilai</th>
+                  <th>Gaya</th>
+                  <th>Kualitas</th>
+                  <th>Orisinalitas</th>
+                  <th>Tanggal</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="eval-tbody">
+                <tr><td colspan="8" style="text-align:center; padding:40px; color:var(--color-on-surface-variant);">Memuat…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+
+    try {
+      const res = await fetch('/api/eval/stats/summary');
+      const stats = await res.json();
+
+      // Normalize field names (server returns total_evals, best_score, grade_a/b/c/d/f)
+      const total = stats.total || stats.total_evals || 0;
+      const highestScore = stats.highest_score || stats.best_score || 0;
+      const gradeDistribution = stats.grade_distribution || {
+        A: stats.grade_a || 0, B: stats.grade_b || 0, C: stats.grade_c || 0,
+        D: stats.grade_d || 0, F: stats.grade_f || 0
+      };
+
+      if (stats && total > 0) {
+        document.getElementById('stats-panel').style.display = '';
+        document.getElementById('eval-stats').innerHTML = `
+          <div class="stat-card">
+            <div class="stat-icon"><span class="material-symbols-outlined">analytics</span></div>
+            <div class="stat-value">${total}</div>
+            <div class="stat-label">Total Evaluasi</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><span class="material-symbols-outlined">star</span></div>
+            <div class="stat-value">${Math.round(stats.avg_score || 0)}</div>
+            <div class="stat-label">Rata-rata Skor</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><span class="material-symbols-outlined">emoji_events</span></div>
+            <div class="stat-value">${highestScore}</div>
+            <div class="stat-label">Skor Tertinggi</div>
+          </div>
+        `;
+
+        const gradeColors = { A: '#2d6a4f', B: '#1d4ed8', C: '#b45309', D: '#ba1a1a', F: '#ba1a1a' };
+        document.getElementById('grade-dist').innerHTML = Object.entries(gradeDistribution)
+          .filter(([, n]) => n > 0)
+          .map(([g, n]) =>
+            `<span class="grade-pill" style="background:${gradeColors[g]||'#555'}22; color:${gradeColors[g]||'#aaa'}; border:1px solid ${gradeColors[g]||'#555'}44;">${g}: ${n}</span>`
+          ).join('');
+      }
+
+      // Load all novels with eval
+      const nvRes = await fetch('/api/editor/dokumen/daftar');
+      const novels = await nvRes.json();
+      allEvals = novels || [];
+
+      if (novels.length === 0) {
+        document.getElementById('eval-tbody').innerHTML = `
+          <tr><td colspan="8" style="text-align:center; padding:40px;">
+            <div style="color:var(--color-on-surface-variant);">Belum ada novel. <a href="generate.html" style="color:var(--color-primary);">Buat novel sekarang →</a></div>
+          </td></tr>
+        `;
+        return;
+      }
+
+      // Fetch eval for each
+      const evalData = {};
+      await Promise.all(novels.slice(0, 20).map(async n => {
+        if (n.novel_id) {
+          try {
+            const er = await fetch('/api/eval/' + n.novel_id);
+            if (er.ok) evalData[n.novel_id] = await er.json();
+          } catch(e) {}
+        }
+      }));
+
+      document.getElementById('eval-tbody').innerHTML = novels.map(n => {
+        const ev = n.novel_id ? (evalData[n.novel_id] || {}) : {};
+        const g = ev.grade || '-';
+        const gc = g !== '-' ? 'grade-' + g.charAt(0) : '';
+        return `
+          <tr onclick="window.location.href='evaluasi.html?novel_id=${n.novel_id || n.id}'" style="cursor:pointer;">
+            <td><strong style="font-family:var(--font-serif);">${n.judul || 'Tanpa Judul'}</strong></td>
+            <td>${ev.total_score ? `<strong style="font-family:var(--font-mono);">${ev.total_score}/100</strong>` : '<span style="color:var(--color-on-surface-variant);">-</span>'}</td>
+            <td>${g !== '-' ? `<span class="grade-badge ${gc}" style="width:28px;height:28px;font-size:0.8rem;">${g}</span>` : '-'}</td>
+            <td style="font-family:var(--font-mono);">${ev.style_score || '-'}</td>
+            <td style="font-family:var(--font-mono);">${ev.quality_score || '-'}</td>
+            <td style="font-family:var(--font-mono);">${ev.originality_score || '-'}</td>
+            <td style="color:var(--color-on-surface-variant);">${formatTgl(n.terakhir_diedit)}</td>
+            <td onclick="event.stopPropagation();">
+              <div class="flex gap-8">
+                <button class="btn btn-secondary btn-sm" onclick="window.location.href='evaluasi.html?novel_id=${n.novel_id || n.id}'">
+                  ${ev.total_score ? '<span class="material-symbols-outlined">bar_chart</span>' : '<span class="material-symbols-outlined">play_arrow</span>'}
+                  ${ev.total_score ? 'Lihat' : 'Evaluasi'}
+                </button>
+                <input type="checkbox" title="Pilih untuk dibandingkan" onchange="toggleCompare(${n.novel_id || n.id}, '${(n.judul||'').replace(/'/g,'')}', this)" />
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+    } catch(err) {
+      toast.error('Gagal memuat data: ' + err.message);
+    }
+  }
+
+  function toggleCompare(id, judul, cb) {
+    if (cb.checked) {
+      if (compareList.length >= 3) { cb.checked = false; toast.warn('Maksimal 3 novel untuk dibandingkan'); return; }
+      compareList.push({ id, judul });
+    } else {
+      compareList = compareList.filter(c => c.id !== id);
+    }
+    document.getElementById('btn-compare').style.display = compareList.length >= 2 ? '' : 'none';
+  }
+
+  async function openCompareModal() {
+    openModal('compare-modal');
+    const body = document.getElementById('compare-body');
+    body.innerHTML = '<div class="skeleton skeleton-text w-80" style="height:2rem;"></div>';
+    try {
+      const results = await Promise.all(compareList.map(c =>
+        fetch('/api/eval/' + c.id).then(r => r.json()).then(data => ({ ...data, judul: c.judul }))
+      ));
+      const labels = ['Gaya', 'Kualitas', 'Orisinalitas'];
+      const colors = ['#3b6662', '#1d4ed8', '#10b981'];
+
+      body.innerHTML = `<div id="compare-chart-wrap" style="max-width:400px; margin:0 auto;"><canvas id="compare-chart"></canvas></div>`;
+
+      new Chart(document.getElementById('compare-chart'), {
+        type: 'radar',
+        data: {
+          labels,
+          datasets: results.map((r, i) => ({
+            label: r.judul || 'Novel ' + (i+1),
+            data: [r.style_score || 0, r.quality_score || 0, r.originality_score || 0],
+            backgroundColor: colors[i] + '33',
+            borderColor: colors[i],
+            pointBackgroundColor: colors[i],
+          }))
+        },
+        options: {
+          scales: { r: { min: 0, max: 100, ticks: { color: '#717977', stepSize: 20 }, grid: { color: '#c0c8c6' }, pointLabels: { color: '#111c2c', font: { size: 12 } } } },
+          plugins: { legend: { labels: { color: '#111c2c' } } }
+        }
+      });
+    } catch(err) {
+      body.innerHTML = `<p style="color:var(--color-error);">Gagal memuat data: ${err.message}</p>`;
+    }
+  }
+
+  function formatTgl(dt) {
+    if (!dt) return '-';
+    return new Date(dt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+</script>
+</body>
+</html>
